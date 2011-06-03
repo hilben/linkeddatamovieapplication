@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="lib" path="C:/Users/Vacheman/Desktop/jastor-1.0.4"/>
+	<classpathentry kind="lib" path="E:/eclipse/plugins/org.daml.jena_1.0.0/jena.jar"/>
+	<classpathentry kind="lib" path="E:/eclipse/plugins/org.daml.jena_1.0.0/log4j-1.2.7.jar"/>
+	<classpathentry kind="lib" path="E:/eclipse/plugins/org.eclipse.swt.win32.win32.x86_64_3.6.2.v3659c.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Vacheman/Desktop/Xerces-J-bin.2.6.2/xerces-2_6_2/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="E:/icu"/>
+	<classpathentry kind="lib" path="C:/Users/Vacheman/Desktop/gdata-samples.java-1.45.0/gdata/java/lib/gdata-youtube-2.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Vacheman/Desktop/gdata-samples.java-1.45.0/gdata/java/lib/gdata-youtube-meta-2.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Vacheman/Desktop/javamail1_4_4/javamail-1.4.4/mail.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Vacheman/Desktop/gdata-samples.java-1.45.0/gdata/java/lib/gdata-maps-2.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Vacheman/Desktop/gdata-samples.java-1.45.0/gdata/java/lib/gdata-maps-meta-2.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Vacheman/Desktop/dependencies/GoogleDataExtDependencies/activation-1.1.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Vacheman/Desktop/google-collect-1.0-rc1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Vacheman/Desktop/DJNativeSwing-SWT-1-0-2-20110430/DJNativeSwing-SWT.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Vacheman/Desktop/DJNativeSwing-SWT-1-0-2-20110430/lib/swt/swt-3.7M5-win32-win32-x86.jar"/>
+	<classpathentry kind="lib" path="lib/appFramework-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/jnlp.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Vacheman/Desktop/DJNativeSwing-SWT-1-0-2-20110430/DJNativeSwing.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
