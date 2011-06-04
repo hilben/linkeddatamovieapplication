@@ -1,0 +1,96 @@
+<% //(C) Copyright IBM Corporation 2005  All Rights Reserved. %>
+
+<% // author: Ben Szekely (<a href="mailto:bhszekel@us.ibm.com">bhszekel@us.ibm.com</a>) %>
+<%@ jet skeleton="ontologyclass.skeleton" package="com.ibm.adtech.jastor.jet" class="ListenerTemplate" imports="java.util.* com.ibm.adtech.jastor.*  com.ibm.adtech.jastor.inference.* com.hp.hpl.jena.rdf.model.*;" %>
+<% JastorContext ctx = oc.getContext(); %>
+
+package <%=oc.getPackageName()%>;
+
+/*
+import com.hp.hpl.jena.datatypes.xsd.*;
+import com.hp.hpl.jena.datatypes.xsd.impl.*;
+import com.hp.hpl.jena.rdf.model.*;
+import com.ibm.adtech.jastor.*;
+import java.util.*;
+import java.math.*;
+*/
+
+
+/**
+ * Implementations of this listener may be registered with instances of <%=oc.getInterfaceFullClassname()%> to 
+ * receive notification when properties changed, added or removed.
+ * <br>
+ */
+public interface <%=oc.getListenerClassname()%> extends com.ibm.adtech.jastor.ThingListener {
+
+<% if (!ctx.isGenerateVocabularyOnly()) { %>
+
+<% 	for (Iterator iter = oc.listProperties(true).iterator(); iter.hasNext();) {%>
+<% 		OntologyProperty prop = (OntologyProperty)iter.next(); %>
+<%			if (prop.isSingleValued() && prop.isDatatypeProperty()) { %>
+<%				// if (!(prop.getRole() == OntologyProperty.ROLE_HERE || prop.getRole() == OntologyProperty.ROLE_BOOLEAN)) { %>
+<%					// continue; %>
+<%				// } %>
+<%	// one method regardless of the number of return types %>
+	/**
+	 * Called when <%=prop.getPropertyName()%> has changed
+	 * @param source the affected instance of <%=oc.getInterfaceFullClassname()%>
+	 */
+	public void <%=prop.getPropertyName()%>Changed(<%=oc.getInterfaceFullClassname()%> source);
+
+<%       } %>
+<%			if (prop.isMultiValued() && prop.isDatatypeProperty()) { %>
+<%				// boolean all = prop.getRole() == OntologyProperty.ROLE_HERE || prop.getRole() == OntologyProperty.ROLE_BOOLEAN; %>
+<%				for (Iterator iter2 = prop.listRanges(true,false);iter2.hasNext();) { %>
+<%          	Resource res = (Resource)iter2.next();%>
+	/**
+	 * Called when a value of <%=prop.getPropertyName()%> has been added
+	 * @param source the affected instance of <%=oc.getInterfaceFullClassname()%>
+	 * @param newValue the object representing the new value
+	 */	
+	public void <%=prop.getPropertyName()%>Added(<%=oc.getInterfaceFullClassname()%> source, <%=prop.getReturnType(res)%> newValue);
+
+	/**
+	 * Called when a value of <%=prop.getPropertyName()%> has been removed
+	 * @param source the affected instance of <%=oc.getInterfaceFullClassname()%>
+	 * @param oldValue the object representing the removed value
+	 */	
+	public void <%=prop.getPropertyName()%>Removed(<%=oc.getInterfaceFullClassname()%> source, <%=prop.getReturnType(res)%> oldValue);
+
+<%          } %>
+<%       } %>
+<%			if (prop.isSingleValued() && prop.isObjectProperty()) { %>
+<%				// if (!(prop.getRole() == OntologyProperty.ROLE_HERE || prop.getRole() == OntologyProperty.ROLE_BOOLEAN)) { %>
+<%					// continue; %>
+<%				// } %>
+<%	// one method regardless of the number of return types %>
+	/**
+	 * Called when <%=prop.getPropertyName()%> has changed
+	 * @param source the affected instance of <%=oc.getInterfaceFullClassname()%>
+	 */
+	public void <%=prop.getPropertyName()%>Changed(<%=oc.getInterfaceFullClassname()%> source);
+
+<%       } %>
+<%			if (prop.isMultiValued() && prop.isObjectProperty()) { %>
+<%				//boolean all = prop.getRole() == OntologyProperty.ROLE_HERE || prop.getRole() == OntologyProperty.ROLE_BOOLEAN; %>
+<%				for (Iterator iter2 = prop.listRanges(true,false);iter2.hasNext();) { %>
+<%          	Resource res = (Resource)iter2.next();%>
+	/**
+	 * Called when a value of <%=prop.getPropertyName()%> has been added
+	 * @param source the affected instance of <%=oc.getInterfaceFullClassname()%>
+	 * @param newValue the object representing the new value
+	 */	
+	public void <%=prop.getPropertyName()%>Added(<%=oc.getInterfaceFullClassname()%> source, <%=prop.getReturnType(res)%> newValue);
+
+	/**
+	 * Called when a value of <%=prop.getPropertyName()%> has been removed
+	 * @param source the affected instance of <%=oc.getInterfaceFullClassname()%>
+	 * @param oldValue the object representing the removed value
+	 */
+	public void <%=prop.getPropertyName()%>Removed(<%=oc.getInterfaceFullClassname()%> source, <%=prop.getReturnType(res)%> oldValue);
+		
+<%          } %>
+<%       } %>
+<% 	} %>
+<% } %>
+}

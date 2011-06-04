@@ -1,0 +1,400 @@
+<html>
+
+<head>
+  <link href="layout/style.css" type="text/css" rel="stylesheet">
+  <title>Jastor</title>
+</head>
+
+<body>
+
+  <div class="contentTop">
+    <div class="contentBody">
+      <div class="contentBodyHead">
+        <div class="contentBodyHeadContainer">
+	  <div style="float: left;">
+	    <font class="title">Jastor</font>&nbsp; &nbsp;
+	    <font class="slogan">Typesafe, Ontology Driven RDF Access from Java</font>
+	  </div>
+	</div>
+	<div style="line-height: 110px;">
+      </div>
+      <div style="clear: both;"></div>
+    </div>
+
+    <div class="contentBodyOuterShell">
+      <div class="contentBodyTopHash"></div>
+      <div class="contentBodyInnerShell">
+
+        <div class="pageTopWrapper">
+            <div class="content">
+	      <!-- nifty floating box -->
+              <div style="float: right; width: 35%; position: relative; top:-15;">
+
+                <div class="floatingBox">
+	          <h1><a href="http://sourceforge.net/project/showfiles.php?group_id=139626">Download</a></h1>
+		  Jastor 1.0.4 Java Source and Binaries<br>
+                </div>
+
+	      </div>
+	      <!-- end nifty floating box -->
+
+	    <div style="width: 62%; margin-bottom: 25px;">
+<h1>Overview</h1>
+
+<p>
+
+Jastor is a open source Java code generator that emits Java Beans from Web
+Ontologies (<a href="http://www.w3.org/2004/OWL/">OWL</a>) enabling
+convenient, type safe access and eventing of RDF stored in a <a
+href="http://jena.sourceforge.net/">Jena Semantic Web Framework</a>
+model. Jastor generates Java interfaces, implementations, factories,
+and listeners based on the properties and class hierarchies in the Web
+Ontologies. Jastor is based on several ideas from <a
+href="http://www.mindswap.org/~aditkal/SEKE04.pdf">Automatic Mapping
+of OWL Ontologies to Java (PDF)</a><a
+href="http://jena.sourceforge.net/"></a>.
+
+</p>
+
+<p>
+Jastor is licensed under the <a href="http://www.opensource.org/licenses/cpl1.0.php">Common Public License</a>.
+</p>
+
+<p>
+Authors:
+<ul>
+  <li>Ben Szekely ( <a href="mailto:bhszekel@us.ibm.com">bhszekel@us.ibm.com </a>)</li>
+</ul>
+</p>
+
+<p>
+Consultant/Supporter
+<ul>
+  <li>Rob Gonzalez ( <a href="mailto:gonzo@us.ibm.com">gonzo@us.ibm.com </a>)</li>
+</ul>
+</p>
+
+<p>
+Past Contributors
+<ul>
+  <li>Joe Betz</li>
+</ul>
+</p>
+
+<p>
+Mailing List:
+<ul>
+  <li><a href="mailto:jastor-general@lists.sourceforge.net">jastor-general@lists.sourceforge.net</a></li>
+</ul>
+</p>
+
+          </div>
+	</div>
+
+	  <div style="clear: both;">&nbsp;</div>
+
+	</div>
+
+	<div>
+	  <div>
+	    <div class="content">
+
+<h1>What's new</h1>
+
+<p>
+
+Jastor 1.0.4 Changes/Features/Fixes
+
+<p>
+	- Jena 2.4 Compatibility
+
+<p>	
+	- Individuals with rdf:type that matches a class in the ontology are given 
+	  constants in the interface for that class
+<p>	  
+	- owl:oneOf Enumerated Classes assure that the members are generated as individuals
+	  in the class and are checked during creation of objects.  Anonymous enumerated classes
+	  specified as property ranges generate a dummy class with individuals to use.
+<p>
+	- previously, rdf:type statements for every class in the type hierarchy would be added to 
+	  new individuals created through the factory.  Now, by request, this behavior is 
+	  configurable via the generation flag addAllRDFTypesInHierarchy. The default behavior
+	  remains to add all the types.
+<p>	  
+	- Open domain properties (null domain, rdfs:Resource, owl:Thing) are now added to every class
+	  in the ontology in which it was defined.  The previous behavior was to ignore such open 
+	  domain properties unless a class had a restriction on that property.
+<p>	  
+	- Literal fixes
+		- configuration of typed vs. plain literals
+		- in typedLiteral mode, the getters of propertie return null unless the literal value
+		  is typed properly.  This may be a bit less convenient in some cases, however, it is
+		  semantically more correct.
+<p>	
+	- If a class has two properties with the same local name (different NS), Jastor 1.0.4 will
+	  create a prefix for the conflicting names.  Optionally, these prefixes may be manually configured
+	  in the JastorContext or in the Ant build.xml
+<p>	  
+	- Generation time performance has been improved by caching the results of OntologyClass.listProperties(...).
+<p>
+	- Various other bug fixes and tweaks that I was not dilligent enough to record.
+
+
+<p>
+Jastor 1.0.3 Changes
+<p>
+The only major feature change is that
+factory getters return null if resouce is not of correct type and if strict typing is enabled
+<p>
+Jastor 1.0.2 Changes
+<p>
+Jastor 1.0.2 improves upon the efficiency of the property caches by registering fewer 
+listeners on the model.  We also added support for owl:functionalProperty so that 
+function properties have single-valued getters/setters.  In addition, properties 
+that are subProperties inherit the domain/range of their parent properties.  We also 
+added a method to the factory getAll<classname>(Model model) that returns all 
+instances of <classname> that exist in the model.
+</p>
+
+<p>
+Finally, the getters and iterators returned by properties with alternate ranges 
+(allValuesFrom, union range definitions) only return instances for objects with the 
+proper rdf:Type.  For example, if we have class A with property “foo” and class B 
+subclassof A, and B (foo allValuesFrom C) and we call myB.getFoo_AsC(), the resulting
+Iterator will skip over any objects that do not have rdf:type C.  In the single valued 
+property case, the method will return null.  
+
+</p>
+
+
+<h1>Requirements</h1>
+
+<p>
+  <ul>
+    <li>
+      <a href="http://jena.sourceforge.net/">Jena Semantic
+      Web Framework</a> version 2.3 or later is
+      required.  Jena 2.4 is recommended.
+    </li>
+    <li>
+      <A href="http://ant.apache.org/">Ant</A> version 1.6 or later is
+      optional. Ant may be used to generate Jastor classes using an Ant build
+      file instead of a Java application.
+    </li>
+  </ul>
+</p>
+
+<h1>Generating Java Classes</h1>
+
+<p>
+
+To Generate Jastor classes, a JastorContext must be defined either
+directly via Jastor's Java API or via the &quot;jastor&quot; Ant Task
+(com.ibm.adtech.jastor.JastorTask). JastorContext
+generation options provide flexibility in terms of what code is
+generated and how Java identifier names are chosen. Some users may wish
+to have the generated classes extend some custom base class.
+This may be done according to the example in
+com.ibm.adtech.jastor.test/src/com/ibm/adtech/jastor/customthing/test.
+
+</p>
+
+<p>
+
+For example, given our <a href="ski.owl">ski.owl</a> ontology, the
+following Java snippet will generate Jastor classes and save them to the
+"gensrc" directory:
+
+</p>
+
+<div class="snippet">
+<u><b>Example 1:</b>  Java to generate Jastor classes</u>
+<pre>
+JastorContext ctx = new JastorContext();
+ctx.addOntologyToGenerate(new FileInputStream("ski.owl"),
+                          "http://jastor.adtech.ibm.com/testonts/Ski",
+                          "com.ibm.adtech.jastor.test.ski");
+JastorGenerator gen = new JastorGenerator(
+                          new File("gensrc").getCanonicalFile(),
+                          ctx);
+gen.run();
+</pre>
+</div>
+
+<p>The following Ant snippet (from <a href="build.xml">build.xml</a>) generates the same classes:</p>
+
+<div class="snippet">
+
+<u><b>Example 2:</b> Jastor Ant Build Task</u>
+
+<pre>
+&lt;target
+  name=&quot;build-ski-ontology&quot;
+  depends=&quot;declare-jastor-tasks&quot;
+  description=&quot;builds ski ontology&quot;&gt;
+	&lt;jastor
+           destdir=&quot;${basedir}/gensrc&quot;
+           generateListeners=&quot;true&quot;
+           generatePropertyCache=&quot;true&quot;
+           generateVocublaryOnly=&quot;false&quot;
+	   useEntireURIForIdentifiers=&quot;false&quot;
+	   useStrictTypeChecking=&quot;true&quot;
+	   generateCacheInFactory=&quot;true&quot;
+	   usePackageNamesForRestrictedRanges=&quot;false&quot; &gt;
+		&lt;ontology
+		  generate=&quot;true&quot;
+		  path=&quot;${basedir}/ontologies/ski.owl&quot;
+		  uri=&quot;http://jastor.adtech.ibm.com/testonts/Ski&quot;
+		  javaPackage=&quot;com.ibm.adtech.jastor.test.ski&quot; /&gt;
+	&lt;/jastor&gt;
+&lt;/target&gt;
+</pre>
+</div>
+
+<p>After Jastor classes are generated, they can be used to access RDF in a clean, type-safe manner:</p>
+
+<div class="snippet">
+<u><b>Example 3:</b>  Using Jastor classes</u>
+
+<pre>
+static final String PREFIX = "http://test.ibm.com/jastor/skiing/";
+static final String POCKET_ROCKETS_URI = PREFIX + "pocketRockets";
+
+Model model = ModelFactory.createDefaultModel();
+
+<font class="comment">// factories get or create resources as needed</font>
+Ski pocketRockets = SkiFactory.createFatTwin(POCKET_ROCKETS_URI, model);
+
+<font class="comment">// setters add or replace statements approperately</font>
+pocketRockets.setManufacturer("solomon");
+pocketRockets.setCoreConstruction("titanium");
+pocketRockets.setModel("Pocket Rockets");
+
+<font class="comment">// getters to read statements from the model</font>
+System.out.println(&quot;These skis have &quot; + pocketRockets.getCoreConstruction() + &quot; core construction.&quot;);
+
+
+<font class="comment">// take advantage of interface based multiple inheritence
+// NOTE: PowederSki and TwinTip, are siblings of the parent class Ski</font>
+if (pocketRockets instanceof PowderSki) {
+	System.out.println("These skis can handle deep powder.");
+}
+if (pocketRockets instanceof TwinTip) {
+	System.out.println("You can ride backwards on these skis.");
+}
+
+<font class="comment">// conviently registers listener</font>
+pocketRockets.registerListener(new SkiListener() {
+	public void manufacturerChanged(Ski source) {
+    	System.out.println("Pocket Rocket Manufacturer changed to: " + source.getManufacturer());
+	}
+	...
+});
+
+<font class="comment">// switch between Jastor Classes and Jena</font>
+StmtIterator iter = pocketRockets.resource().listProperties();
+System.out.println("Lets look at all statements about these skis, even ones that are not part of our ontology: ");
+while(iter.hasNext()) {
+	System.out.println("\t" + iter.nextStatement());
+}
+</pre>
+</div>
+
+<p>
+For more examples of using Jastor to generate classes see com.ibm.adtech.jastor.test/src/com/ibm/adtech/jastor/jet/test in Jastor's test source in CVS.
+and com.ibm.adtech.jastor.test/build.xml.  In particular, the OWL-S tests demonstrate numerious complex OWL DL features.
+</p>
+<p>
+Jastor source in in <A
+	href="http://sourceforge.net/cvs/?group_id=139626">CVS</A> under the &quot;com.ibm.adtech.jastor&quot; module.
+</p>
+<p>
+Jastor's test source in in <A
+	href="http://sourceforge.net/cvs/?group_id=139626">CVS</A> under the &quot;com.ibm.adtech.jastor.test&quot; module.</p>
+
+<h1>OWL Compatibility Notes</h1>
+
+<p>
+
+Jastor supports most features of OWL Lite and OWL DL in terms of
+generating interfaces and hierarchies that capture the correct class
+descriptions and properties. In this version, Jastor does not perform
+restriction checking beyond those restrictions that can be implemented
+with first order Java constructs.  For example, type restrictions are
+implemented with setter methods that take specific parameters.
+
+</p>
+
+<h1><a name="download"></a>Download</h1>
+
+<p>
+
+Jastor binaries and source are available for download on the
+SourceForge files page: <A
+href="http://sourceforge.net/project/showfiles.php?group_id=139626">Download
+Page</A>.</p>
+
+<p>
+
+For anonymous cvs access to Jastor see the SourceForge CVS page: <A
+href="http://sourceforge.net/cvs/?group_id=139626">CVS Page</A>.
+
+</p>
+
+<h1><a name="Examples"></a>Example Generated APIs</h1>
+
+<p>
+
+To demonstrate the utility of Jastor, we have generated and packaged code for several popular ontologies.  The packages
+are available for download on the
+SourceForge files page: <A
+href="http://sourceforge.net/project/showfiles.php?group_id=139626">Download
+Page</A>.  We now present a brief description of each package.
+</p>
+
+<h2>OWL-S 1.1</h2>
+<p>
+<A href="http://www.w3.org/Submission/OWL-S/">OWL-S</A> is a set of ontologies for describing workflow and Web Services.  The
+generated package contains code for OWL-S and all of its dependencies (ObjectList, SWRL, time-entry, etc...).
+</p>
+
+<h2>FOAF</h2>
+<p>
+<A href="http://www.foaf-project.org/">FOAF</A> is a popular system for describing people and relationships on the Web.  Recently, RDF
+has become a popular data format for FOAF.  This package contains code generated from the FOAF RDFS ontology.
+</p>
+
+<h2>biopax</h2>
+<p>
+<A href="http://www.biopax.org/">Biopax</A> is a collaborative effort to create a data exchange format for biological pathway data.  Users
+of biopax should find the generated Jastor classes useful.
+</p>
+
+<h2>Collections</h2>
+<p>
+The Collections ontology is designed to provide a way to express ordered and unordered lists of objects and literals that can be subclassed. Unlike
+ObjectList, collections can contain mixtures of literals and objects.  <code>CollectionWrapper</code> is a <code>java.util.Collection</code>
+implementation based on the generated code.
+</p>
+
+<div style="text-align:right; margin-right: 25px;">
+<A href="http://sourceforge.net"> <IMG src="http://sourceforge.net/sflogo.php?group_id=139626&amp;type=5" width="210" height="62" border="0" alt="SourceForge.net Logo" /></A>
+</div>
+
+</div>
+          </div>
+          <div style="clear: both;">&nbsp;</div>
+        </div>
+      </div>
+      <!--<div class="contentBodyBottomHash"></div>-->
+    </div>
+    <div style="padding: 10px;">
+    <font color="black">Design by <a href="http://www.plainblack.com/design">Plain Black</a>. Used with
+permission from the <a href="http://www.spreadwebgui.com">WebGUI</a> open source content
+management project.</font>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

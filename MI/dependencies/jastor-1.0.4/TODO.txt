@@ -1,0 +1,202 @@
+Jastor 1.0.5 TODO
+-----------------
+
+Necessary changes/fixes/features
+--------------------------------
+
+
+Possible changes/fixes/features
+-------------------------------
+
+rdf:List support
+	- if we depend on RDF:List, bring it into the model
+
+Make sure subclass cardinality search looks in intersection hierarchy as well.
+
+have getAll(...) return the proper types..using getThing.
+
+make sure OntClass passed into OntologyClass belongs to the proper OntModel.  Otherwise, create a new
+OntClass.
+
+specify property to get Class/property/ontology names from
+
+Make sure alternate range methods only return instances of the proper type
+	
+  Literals (not sure if we need handle these)
+  
+    - Non-cached Iterators (Hard) 
+	
+	- Cached Iterators (Easy) 
+	
+	- Non-Cached Getters (Easy)	
+	
+	- Cached Getters (Easy)
+	
+	- Literal Added Event (Easy)
+	
+		- listener invocation (multi-only) 
+		
+		- cache update 
+	
+	- Literal Removed Event (Easy)
+	
+		- listener invocation
+		
+		- cache update
+
+DataRange enumerations?, DataRange for ObjectProperty?
+
+Multiple namespaces in a single owl file?
+
+Better error codes, exception hierarchy
+
+sequences?
+
+RDF configuration (is ANT enough?)
+
+have junit tests run automatically with cache and no cache, can 
+  Junit tests generate code that they depend on?
+
+support for nested set operators (unionOf,instersection)
+
+Figure out how to make code not sensitive to extra class definitions
+  how do we know which class definition is the correct one?  Is it the whose NS matches the ontology?
+  
+Additional Strict Typing
+	- cardinality
+	- allValuesFrom - throw exceptions in methods for non-valid types
+
+
+Completed Tasks
+---------------
+
+Jastor 1.0.4 Released
+
+owl:oneOf
+	- as an anonmyous class - generate a packate(private?), anonymous inner class, with some 
+	  constants for instances.
+	- as a regular class - generate a class with some individuals..in the constructor
+	of the class, check that itis one of the individuals.
+
+cache results of listProperties to (possibly) improve generation performance
+
+open-domain properties
+
+	- have to find away to get only the open domain properties + the direct properties
+
+configure injection of entire type hierarchy of rdf:type statements
+
+fix XMLLiteralTypes
+	- send the entire literal into fixLiterals
+
+Strict Literal typing for typed literals
+
+typeLiteral/literal support (configure at generation-time)
+
+passed JUnits tests with Jena 2.4
+
+if a class has a property with the same name, use a prefix to generate a proper name
+	- make prefixes configurable via ant
+
+bug fixes
+
+Jastor 1.0.3 Released
+
+Fix Literal problem, string constructor not enough
+
+Update for Jena 2.3
+
+factory getters return null if resouce is not of correct type and strict typing is enabled
+
+Jastor 1.0.2 Released
+
+add a getAll<Object>() method to the factory to return all instances of a particular object
+
+cache efficiency update.   Only register one listener per model and use hashmaps to delegate to those listeners.
+
+only setupModelListener in constructor if cache is enabled.  Otherwise, setupModelListener the first 
+time a listener is registered with the jastor object
+
+Make sure alternate range methods only return instances of the proper type
+
+  Resources:
+
+	- Non-cached Resource Iterators (Hard) DONE
+	
+	- Cached Resource Iterators (Easy) DONE
+	
+	- Non-Cached Resource Getters (Easy) DONE
+	
+	- Cached Resource Getters (Easy) DONE
+	
+	- Resource Added Event (Med) DONE
+	
+		- listener invocation (multi-only) DONE
+		
+		- cache update DONE
+	
+	- Resource Removed Event (Med) DONE
+	
+		- listener invocation (multi-only) DONE
+		
+		- cache update (multi-only) DONE
+
+
+subPropertyOf: infer domains and ranges from super-properties when necessary
+
+subProperty domain/range inheritance
+
+functionalProperty
+
+-----1.0.1 release-------
+
+allvaluesfrom:union
+
+RDFS support (basic classes, properties)
+
+Some values from, union domain....
+
+SomeValuesFrom
+
+Multiple base ranges (Union range)
+
+- get all properties from union domains explicitly instead of as the appear in restrictions
+  we will do this by building a table of union domain properties for the entire context
+
+- add assertions to all inference junit tests
+- add method to return all statements that are part of an object
+- method to remove all statements that are part of an object
+
+- listeners
+	- generate listeners DONE
+	- implement internal statementAdded DONE
+	- implement internal statementRemoved DONE
+
+- auto generated comments
+
+- ant task
+
+- fixed OWLS-1.1 compatiblity issues
+
+- hasValue
+
+- make cache in factory configurable
+
+- intersection
+
+- Implement union property
+	- if A union (B,C) make B,C extend A 
+	    - have to check if B,C already extend A (Process.owl)
+	   
+- fixup getAllSuperClasses()
+
+- Implement intersection properly
+	- if A intersection (B,..) make A extend B...also have to check for restrictions here too.
+  just now have to solve the intersection restriction problem where the restriction is on a property
+  declared in the class
+  
+- add optional basic strict typing
+	- change the factory call in add/set with Resource to get (not create)
+	- if string typing is required, we check the RDF type in  Factory.getInstance(Resource), add/set(Resource)
+
+- implement extensible Thing feature

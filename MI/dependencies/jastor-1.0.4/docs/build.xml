@@ -1,0 +1,123 @@
+<project name="ski-ontology" default="build-ski-ontology" basedir=".">
+	<description>
+        Generates Jastor classes for the ski ontology
+    </description>
+	
+	<!-- set global properties for this build -->
+		
+	<property name="tools.jena" location="../com.hp.hpl.jena/lib" />
+	<property name="tools.icu" location="../com.ibm.icu" />
+	<property name="tools.concurrent" location="../edu.oswego.cs.dl.util.concurrent/" />
+
+	<path id="base.path">
+		<pathelement path="${classpath}" />
+	</path>
+
+	<path id="tools.logging.path">
+		<fileset dir="../com.ibm.adtech.eclipse.logging/lib">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<path id="tools.jena.path">
+		<path refid="base.path" />
+		<fileset dir="${tools.jena}">
+			<include name="jena-2.4.jar" />
+			<include name="iri.jar" />
+			<include name="arq-1.3.jar" />
+		</fileset>
+		<fileset dir="${tools.icu}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${tools.concurrent}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<path id="jastor.ant.path">
+		<path refid="tools.logging.path" />
+		<path refid="tools.jena.path" />
+		<path location="../com.ibm.adtech.jastor/bin" />
+		<!-- add this path for custom thing test.  This is where users should add paths to their custom thing-->
+		<path location="../com.ibm.adtech.jastor.test/bin" />
+	</path>
+
+	<target name="declare-jastor-tasks">
+		<taskdef name="jastor" classpathref="jastor.ant.path" classname="com.ibm.adtech.jastor.ant.JastorTask" />
+		<!--
+		<taskdef name="ontology" classpathref="jastor.ant.path" classname="com.ibm.adtech.jastor.ant.OntologyElement" />
+		-->
+	</target>
+
+	<target name="build-ski-ontology"  depends="declare-jastor-tasks" description="builds ski ontology">
+		<jastor destdir="${basedir}/gensrc" generateListeners="true" generatePropertyCache="true" generateVocublaryOnly="false" 
+				useEntireURIForIdentifiers="false" useStrictTypeChecking="true" generateCacheInFactory="true" usePackageNamesForRestrictedRanges="false" >
+			<prefix ns="http://jastor.adtech.ibm.com/testonts/predicates#" prefix="ski" />
+			<prefix ns="http://jastor.adtech.ibm.com/altnamespace/predicates#" prefix="altski" />
+			<ontology generate="true" path="${basedir}/ontologies/ski.owl" uri="http://jastor.adtech.ibm.com/testonts/Ski"
+					  javaPackage="com.ibm.adtech.jastor.test.ski" />
+		</jastor>
+	</target> 
+	
+	<target name="build-ski-ontology-custom-thing"  depends="declare-jastor-tasks" description="tests custom Thing">
+		<jastor destdir="${basedir}/gensrc" generateListeners="true" generatePropertyCache="true" generateVocublaryOnly="false" 
+				useEntireURIForIdentifiers="false" useStrictTypeChecking="true" generateCacheInFactory="true" usePackageNamesForRestrictedRanges="false" >
+			<customThing thingInterface="com.ibm.adtech.jastor.customthing.test.MyThing"
+						 thingImpl="com.ibm.adtech.jastor.customthing.test.MyThingImpl"
+						 thingFactory="com.ibm.adtech.jastor.customthing.test.MyThingFactory" />
+			<ontology generate="true" path="${basedir}/ontologies/ski.owl" uri="http://jastor.adtech.ibm.com/testonts/Ski"
+					  javaPackage="com.ibm.adtech.jastor.customthing.test.ski" />
+		</jastor>
+	</target>
+	
+	
+	<target name="build-ski-ontology-custom-template" depends="declare-jastor-tasks" description="tests custom templates"> 
+		<jastor destdir="${basedir}/gensrc" useStrictTypeChecking="true" generateStandardCode="false">
+			<template name="Impl" className="com.ibm.adtech.jastor.jet.ImplementationTemplate" />
+			<ontology generate="true" path="${basedir}/ontologies/ski.owl" uri="http://jastor.adtech.ibm.com/testonts/Ski"
+					  javaPackage="com.ibm.adtech.jastor.test.ski" />
+		</jastor>
+	</target>
+	
+		
+	<target name="build-owls-ontology" depends="declare-jastor-tasks" description="builds owls 1.1 ontology">
+		<jastor destdir="${basedir}/gensrc" useStrictTypeChecking="false" generateListeners="true" generatePropertyCache="true" generateVocublaryOnly="false" 
+				useEntireURIForIdentifiers="false" generateCacheInFactory="true" usePackageNamesForRestrictedRanges="false" >
+			<ontology generate="true" path="${basedir}/ontologies/owls-11/Process.owl" uri="http://www.daml.org/services/owl-s/1.1/Process.owl"
+					  javaPackage="com.ibm.adtech.jastor.test.owls.process" />
+			<ontology generate="true" path="${basedir}/ontologies/owls-11/Grounding.owl" uri="http://www.daml.org/services/owl-s/1.1/Grounding.owl"
+					  javaPackage="com.ibm.adtech.jastor.test.owls.grounding" />
+			<ontology generate="true" path="${basedir}/ontologies/owls-11/ObjectList.owl" uri="http://www.daml.org/services/owl-s/1.1/generic/ObjectList.owl"
+					  javaPackage="com.ibm.adtech.jastor.test.owls.objectlist" />
+			<ontology generate="true" path="${basedir}/ontologies/owls-11/Expression.owl" uri="http://www.daml.org/services/owl-s/1.1/generic/Expression.owl"
+					  javaPackage="com.ibm.adtech.jastor.test.owls.expression" />
+			<ontology generate="true" path="${basedir}/ontologies/owls-11/time-entry.owl" uri="http://www.isi.edu/~pan/damltime/time-entry.owl"
+					  javaPackage="com.ibm.adtech.jastor.test.owls.timeentry" />
+			<ontology generate="true" path="${basedir}/ontologies/owls-11/Service.owl" uri="http://www.daml.org/services/owl-s/1.1/Service.owl"
+					  javaPackage="com.ibm.adtech.jastor.test.owls.service" />
+			<ontology generate="true" path="${basedir}/ontologies/owls-11/Profile.owl" uri="http://www.daml.org/services/owl-s/1.1/Profile.owl"
+					  javaPackage="com.ibm.adtech.jastor.test.owls.profile" />
+			<ontology generate="true" path="${basedir}/ontologies/owls-11/swrl.owl" uri="http://www.daml.org/2003/11/swrl"
+					  javaPackage="com.ibm.adtech.jastor.test.owls.swrl" />
+		</jastor>
+	</target>
+	
+	<target name="build-foaf-ontology"  depends="declare-jastor-tasks" description="builds foaf ontology, RDFS example">
+		<jastor destdir="${basedir}/gensrc" generateListeners="true" generatePropertyCache="true" generateVocublaryOnly="false" 
+				useEntireURIForIdentifiers="false" useStrictTypeChecking="true" generateCacheInFactory="true" usePackageNamesForRestrictedRanges="false" >
+			<ontology generate="true" path="${basedir}/ontologies/foaf.rdfs" uri="http://xmlns.com/foaf/0.1/#FOAF"
+					  javaPackage="com.ibm.adtech.jastor.rdfs.test.foaf" ontlang="rdfs" />
+		</jastor>
+	</target> 
+	
+	<target name="build-rdfs-ontology"  depends="declare-jastor-tasks" description="builds rdfs ontology, RDFS example">
+		<jastor destdir="${basedir}/gensrc" generateListeners="true" generatePropertyCache="true" generateVocublaryOnly="false" 
+				useEntireURIForIdentifiers="false" useStrictTypeChecking="true" generateCacheInFactory="true" usePackageNamesForRestrictedRanges="false" >
+			<ontology generate="true" path="${basedir}/ontologies/rdfs.rdfs" uri="http://www.w3.org/2000/01/rdf-schema#"
+					  javaPackage="com.ibm.adtech.jastor.rdfs.test.rdfs" ontlang="rdfs" />
+			<ontology generate="true" path="${basedir}/ontologies/dc.rdfs" uri="http://purl.org/dc/elements/1.1/#DublinCore"
+					  javaPackage="com.ibm.adtech.jastor.rdfs.test.dc" ontlang="rdfs" />
+		</jastor>
+	</target> 
+
+</project>

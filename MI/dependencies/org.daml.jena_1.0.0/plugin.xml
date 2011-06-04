@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin
+   id="org.daml.jena"
+   name="Jena Library Plugin"
+   version="1.0.0"
+   provider-name="BBN Technologies">
+
+   <runtime>
+      <library name="antlr.jar">
+         <packages prefixes="antlr"/>
+      </library>
+      <library name="concurrent.jar">
+         <packages prefixes="EDU.oswego.cs.dl.util.concurrent"/>
+      </library>
+      <library name="icu4j.jar">
+         <packages prefixes="com.ibm.icu"/>
+      </library>
+      <library name="jakarta-oro-2.0.5.jar">
+         <packages prefixes="org.apache.oro"/>
+      </library>
+      <library name="jena.jar">
+         <export name="*"/>
+         <packages prefixes="com.hp.hpl.jena"/>
+      </library>
+      <library name="junit.jar">
+         <packages prefixes="junit"/>
+      </library>
+      <library name="log4j-1.2.7.jar">
+         <packages prefixes="org.apache.log4j"/>
+      </library>
+      <library name="rdf-api-2001-01-19.jar">
+         <packages prefixes="com.lastmileservices.rdf.util,edu.stanford.db,org.brownell.xml,org.w3c.rdf,org.xml.sax"/>
+      </library>
+      <library name="xercesImpl.jar">
+         <packages prefixes="org.apache,org.w3c.dom"/>
+      </library>
+      <library name="xmlParserAPIs.jar">
+         <packages prefixes="javax.xml.parsers,org.w3c.dom,org.xml.sax"/>
+      </library>
+   </runtime>
+
+</plugin>
