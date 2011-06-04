@@ -1,0 +1,865 @@
+<% //(C) Copyright IBM Corporation 2005  All Rights Reserved. %>
+
+<% // author: Ben Szekely (<a href="mailto:bhszekel@us.ibm.com">bhszekel@us.ibm.com</a>) %>
+<%@ jet skeleton="ontologyclass.skeleton" package="com.ibm.adtech.jastor.jet" class="ImplementationTemplate" imports="java.util.* com.ibm.adtech.jastor.*  com.ibm.adtech.jastor.inference.* com.hp.hpl.jena.rdf.model.*;" %>
+<% JastorContext ctx = oc.getContext(); %>
+
+package <%=oc.getPackageName()%>;
+
+/*
+import com.hp.hpl.jena.datatypes.xsd.*;
+import com.hp.hpl.jena.datatypes.xsd.impl.*;
+*/
+import com.hp.hpl.jena.rdf.model.*;
+import com.hp.hpl.jena.rdf.listeners.StatementListener;
+import com.hp.hpl.jena.vocabulary.RDF;
+import com.ibm.adtech.jastor.*;
+import com.ibm.adtech.jastor.util.*;
+
+
+/**
+ * Implementation of {@link <%=oc.getInterfaceFullClassname()%>}
+ * Use the <%=oc.getFactoryFullClassname()%> to create instances of this class.
+ * <p>(URI: <%=oc.getURI() %>)</p>
+ * <br>
+ */
+public class <%=oc.getImplClassname()%> extends <%=ctx.getThingImpl().getName()%> implements <%=oc.getInterfaceFullClassname()%> {
+	
+
+<% for (java.util.Iterator iter = oc.listProperties(true).iterator(); iter.hasNext();) {%>
+<% 		OntologyProperty prop = (OntologyProperty)iter.next(); %>
+<% // have to add the properties here to so we have no ambiguity with multiple inheritance %>
+	private static com.hp.hpl.jena.rdf.model.Property <%=prop.getPropertyName()%>Property = ResourceFactory.createProperty("<%=prop.getURI()%>");
+<% 	if (ctx.isGeneratePropertyCache()) { %>
+<%       if (prop.isSingleValued()) { %>
+<%				for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%    			Resource res = (Resource)iter2.next();%>
+	private <%=prop.getReturnType(res)%> <%=prop.getPropertyName(res)%>;
+<%   			} %>
+<%       } %>
+<%       if (prop.isMultiValued() && prop.isDatatypeProperty()) { %>
+<%				for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%    			Resource res = (Resource)iter2.next();%>
+	private java.util.ArrayList <%=prop.getPropertyName(res)%>;
+<%   			} %>
+<%       } %>
+<%       if (prop.isMultiValued() && prop.isObjectProperty()) { %>
+<%				for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%    			Resource res = (Resource)iter2.next();%>
+	private java.util.ArrayList <%=prop.getPropertyName(res)%>;
+<%   			} %>
+<%       } %>
+<% 	} %>
+<% } %>
+
+<% if (oc.isEnumeratedClass()) { %>
+	private static java.util.Set oneOfClasses = new java.util.HashSet();
+	static {
+<% Iterator oneOfClassesItr = oc.listOneOfClasses().iterator(); %>
+<%   while (oneOfClassesItr.hasNext()) { %>
+<%		Resource oneOfClass = (Resource)oneOfClassesItr.next(); %>
+		oneOfClasses.add(<%=oc.getIndividualIdentifierName(oneOfClass)%>);
+<%   } %>
+	}
+<% } %> 
+
+	<%=oc.getImplClassname()%>(Resource resource, Model model) throws JastorException {
+		super(resource, model);
+<% if (ctx.isGeneratePropertyCache()) { %>
+		setupModelListener();
+<% } %>
+	}     
+    	
+	static <%=oc.getImplClassname()%> get<%=oc.getInterfaceClassname()%>(Resource resource, Model model) throws JastorException {
+<% if (ctx.isUseStrictTypeChecking()) { %>
+		if (!model.contains(resource,RDF.type,<%=oc.getInterfaceClassname()%>.TYPE))
+			return null;
+<% } %>
+		return new <%=oc.getImplClassname()%>(resource, model);
+	}
+	    
+	static <%=oc.getImplClassname()%> create<%=oc.getInterfaceClassname()%>(Resource resource, Model model) throws JastorException {
+<% if (oc.isEnumeratedClass()) { %>
+		if (!oneOfClasses.contains(resource)) {
+			throw new JastorException("Resource " + resource + " not a member of enumeration class <%=oc.getURI()%>"); 
+		}
+<% } %> 
+		<%=oc.getImplClassname()%> impl = new <%=oc.getImplClassname()%>(resource, model);
+		
+		if (!impl._model.contains(new com.hp.hpl.jena.rdf.model.impl.StatementImpl(impl._resource, RDF.type, <%=oc.getInterfaceClassname()%>.TYPE)))
+			impl._model.add(impl._resource, RDF.type, <%=oc.getInterfaceClassname()%>.TYPE);
+<%	if (ctx.isAddAllRDFTypesInHierarchy()) { %>
+		impl.addSuperTypes();
+<%	}%>
+		impl.addHasValueValues();
+		return impl;
+	}
+	
+	void addSuperTypes() {
+<%	java.util.Iterator superit = oc.listAllExtensionClasses().iterator(); %>
+<%	while (superit.hasNext()) { %>
+<%		OntologyClass ocl = (OntologyClass)superit.next(); %>
+		if (!_model.contains(_resource, RDF.type, <%=ocl.getInterfaceFullClassname()%>.TYPE))
+			_model.add(new com.hp.hpl.jena.rdf.model.impl.StatementImpl(_resource, RDF.type, <%=ocl.getInterfaceFullClassname()%>.TYPE));     
+<%	} %>
+	}
+   
+	void addHasValueValues() {
+<% 	for (java.util.Iterator iter = oc.listProperties(true).iterator(); iter.hasNext();) {%>
+<% 		OntologyProperty prop = (OntologyProperty)iter.next(); %>
+<%			List list = prop.getHasValueValues(); %>
+<%			for (int i=0;i<list.size();i++) { %>
+<%				RDFNode node = (RDFNode)list.get(i); %>
+<%				if (prop.isObjectProperty()) { %>
+		if (!_model.contains(_resource, <%=prop.getPropertyName()%>Property, _model.getResource("<%=node%>")))
+			_model.add(new com.hp.hpl.jena.rdf.model.impl.StatementImpl(_resource, <%=prop.getPropertyName()%>Property, _model.getResource("<%=node%>")));
+<%				} else { %>
+		if (!_model.contains(_resource, <%=prop.getPropertyName()%>Property, createLiteral("<%=node%>")))
+			_model.add(new com.hp.hpl.jena.rdf.model.impl.StatementImpl(_resource, <%=prop.getPropertyName()%>Property, createLiteral("<%=node%>")));
+<%				} %>
+<%			} %>
+<%		} %>
+	}
+    
+<% if (ctx.isGeneratePropertyCache() || ctx.isGenerateListeners()) { %>
+    private void setupModelListener() {
+<%		if (ctx.isGenerateListeners()) { %>
+    	listeners = new java.util.ArrayList();
+<%		} %>
+    	<%=oc.getFactoryFullClassname()%>.registerThing(this);
+    }
+<% } %>
+
+	public java.util.List listStatements() {
+		java.util.List list = new java.util.ArrayList();
+		StmtIterator it = null;
+<% for (java.util.Iterator iter = oc.listProperties(true).iterator(); iter.hasNext();) {%>
+<% 	OntologyProperty prop = (OntologyProperty)iter.next(); %>
+		it = _model.listStatements(_resource,<%=prop.getPropertyName()%>Property,(RDFNode)null);
+		while (it.hasNext()) {
+			list.add(it.next());
+		}
+<% } %>
+		it = _model.listStatements(_resource,RDF.type, <%=oc.getInterfaceFullClassname()%>.TYPE);
+		while (it.hasNext()) {
+			list.add(it.next());
+		}
+<%	for (java.util.Iterator iter = oc.listAllExtensionClasses().iterator(); iter.hasNext();) { %>
+<%		OntologyClass ocl = (OntologyClass)iter.next(); %>
+		it = _model.listStatements(_resource,RDF.type, <%=ocl.getInterfaceFullClassname()%>.TYPE);
+		while (it.hasNext()) {
+			list.add(it.next());
+		}
+<%	} %>
+		return list;
+	}
+	
+<% if (ctx.isGeneratePropertyCache()) { %>
+	public void clearCache() {
+<% 	for (java.util.Iterator iter = oc.listProperties(true).iterator(); iter.hasNext();) {%>
+<% 	OntologyProperty prop = (OntologyProperty)iter.next(); %>
+<%		for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%          Resource res = (Resource)iter2.next();%>
+		<%=prop.getPropertyName(res)%> = null;
+<%		} %>
+<% 	} %>
+	}
+<% } %>
+
+	private com.hp.hpl.jena.rdf.model.Literal createLiteral(Object obj) {
+<% if (ctx.isUseTypedLiterals()) { %>
+		return _model.createTypedLiteral(obj);
+<% } else { %>
+		return _model.createLiteral(obj.toString(),false);
+<% } %>
+	}
+
+<% for (java.util.Iterator iter = oc.listProperties(true).iterator(); iter.hasNext();) {%>
+<% 	OntologyProperty prop = (OntologyProperty)iter.next(); %>
+<%		if (prop.isSingleValued() && prop.isDatatypeProperty()) { %>
+<%			for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%          Resource res = (Resource)iter2.next();%>
+	public <%=prop.getReturnType(res)%> get<%=prop.getPropertyCapped(res)%>() throws JastorException {
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		if (<%=prop.getPropertyName(res)%> != null)
+			return <%=prop.getPropertyName(res)%>;
+<% 			} %>
+		com.hp.hpl.jena.rdf.model.Statement stmt = _model.getProperty(_resource, <%=prop.getPropertyName()%>Property);
+		if (stmt == null)
+			return null;
+		if (!stmt.getObject().canAs(com.hp.hpl.jena.rdf.model.Literal.class))
+			throw new JastorInvalidRDFNodeException(uri() + ": <%=prop.getPropertyName(res)%> getProperty() in <%=oc.getInterfaceFullClassname()%> model not Literal", stmt.getObject());
+		com.hp.hpl.jena.rdf.model.Literal literal = (com.hp.hpl.jena.rdf.model.Literal) stmt.getObject().as(com.hp.hpl.jena.rdf.model.Literal.class);
+<% 			if (prop.getReturnType(res).equals("com.hp.hpl.jena.rdf.model.Literal")) { %>
+<% 				if (ctx.isGeneratePropertyCache()) { %>
+		<%=prop.getPropertyName(res)%> = literal;
+<%				} %>
+		return literal;
+<% 			} else { %>
+		Object obj = Util.fixLiteral(<%=ctx.isUseTypedLiterals()%>,literal,"<%=prop.getReturnType(res)%>","<%=prop.getRangeURI(res)%>");
+<% 				if (ctx.isGeneratePropertyCache())  { %>
+		<%=prop.getPropertyName(res)%> = (<%=prop.getReturnType(res)%>)obj;
+		return <%=prop.getPropertyName(res)%>;
+<%				} else { %>
+		return (<%=prop.getReturnType(res)%>)obj;
+<%				} %>
+<% 			} %>
+	}
+	
+	public void set<%=prop.getPropertyCapped()%>(<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%>) throws JastorException {
+		if (_model.contains(_resource,<%=prop.getPropertyName()%>Property)) {
+			_model.removeAll(_resource,<%=prop.getPropertyName()%>Property,null);
+		}
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		this.<%=prop.getPropertyName(res)%> = <%=prop.getPropertyName()%>;
+<% 			} %>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+		if (<%=prop.getPropertyName()%> != null) {
+<% 			if (prop.getReturnType(res).equals("com.hp.hpl.jena.rdf.model.Literal")) {%>
+			_model.add(_model.createStatement(_resource,<%=prop.getPropertyName()%>Property, <%=prop.getPropertyName()%>));
+<% 			} else { %>
+			_model.add(_model.createStatement(_resource,<%=prop.getPropertyName()%>Property, createLiteral(<%=prop.getPropertyName()%>)));
+<%				} %>
+		}	
+	}
+<%       } // end allRanges %>
+<%   } // end single-data %>
+
+<%	  if (prop.isMultiValued() && prop.isDatatypeProperty()) { %>
+<%			for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%          Resource res = (Resource)iter2.next();%>
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+	private void init<%=prop.getPropertyCapped(res)%>() throws JastorException {
+		<%=prop.getPropertyName(res)%> = new java.util.ArrayList();
+		
+		StmtIterator it = _model.listStatements(_resource, <%=prop.getPropertyName()%>Property, (RDFNode)null);
+		while(it.hasNext()) {
+			com.hp.hpl.jena.rdf.model.Statement stmt = (com.hp.hpl.jena.rdf.model.Statement)it.next();
+			if (!stmt.getObject().canAs(com.hp.hpl.jena.rdf.model.Literal.class))
+				throw new JastorInvalidRDFNodeException (uri() + ": One of the <%=prop.getURI()%> properties in <%=oc.getInterfaceClassname()%> model not a Literal", stmt.getObject());
+			com.hp.hpl.jena.rdf.model.Literal literal = (com.hp.hpl.jena.rdf.model.Literal) stmt.getObject().as(com.hp.hpl.jena.rdf.model.Literal.class);
+<% 				if (prop.getReturnType(res).equals("com.hp.hpl.jena.rdf.model.Literal")) { %>
+			<%=prop.getPropertyName(res)%>.add(literal);
+<%             } else { %>
+			Object obj = Util.fixLiteral(<%=ctx.isUseTypedLiterals()%>,literal,"<%=prop.getReturnType(res)%>","<%=prop.getRangeURI(res)%>");
+			if (obj != null)
+				<%=prop.getPropertyName(res)%>.add(obj);
+<%             } %>
+		}
+	}
+<% 			}  %>
+
+	public java.util.Iterator get<%=prop.getPropertyCapped(res)%>() throws JastorException {
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		if (<%=prop.getPropertyName(res)%> == null)
+			init<%=prop.getPropertyCapped(res)%>();
+		return new com.ibm.adtech.jastor.util.CachedPropertyIterator(<%=prop.getPropertyName(res)%>,_resource,<%=prop.getPropertyName()%>Property,false);
+<% 			} else { %>
+		return new com.ibm.adtech.jastor.util.PropertyIterator(_resource,<%=prop.getPropertyName()%>Property,_model.getResource("<%=prop.getRangeURI(res)%>")) {
+			public Object getPropertyValue(RDFNode value) {
+				com.hp.hpl.jena.rdf.model.Literal literal = (com.hp.hpl.jena.rdf.model.Literal) value.as(com.hp.hpl.jena.rdf.model.Literal.class);
+<% 				if (prop.getReturnType(res).equals("com.hp.hpl.jena.rdf.model.Literal")) { %>
+			return literal;
+<%              } else { %>
+			return Util.fixLiteral(<%=ctx.isUseTypedLiterals()%>,literal,"<%=prop.getReturnType(res)%>","<%=prop.getRangeURI(res)%>");
+<%			    } %>
+			}
+		};
+<%          } %>
+	}
+
+	public void add<%=prop.getPropertyCapped()%>(<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%>) throws JastorException {
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		if (this.<%=prop.getPropertyName(res)%> == null)
+			init<%=prop.getPropertyCapped(res)%>();
+		if (this.<%=prop.getPropertyName(res)%>.contains(<%=prop.getPropertyName()%>))
+			return;
+<%				} %>
+		if (_model.contains(_resource, <%=prop.getPropertyName()%>Property, createLiteral(<%=prop.getPropertyName()%>)))
+			return;
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		this.<%=prop.getPropertyName(res)%>.add(<%=prop.getPropertyName()%>);
+<%				} %>
+<% 			if (prop.getReturnType(res).equals("com.hp.hpl.jena.rdf.model.Literal")) {%>
+		_model.add(_resource, <%=prop.getPropertyName()%>Property, <%=prop.getPropertyName()%>);
+<% 			} else { %>
+		_model.add(_resource, <%=prop.getPropertyName()%>Property, createLiteral(<%=prop.getPropertyName()%>));
+<%			} %>
+	}
+	
+	public void remove<%=prop.getPropertyCapped()%>(<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%>) throws JastorException {
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		if (this.<%=prop.getPropertyName(res)%> == null)
+			init<%=prop.getPropertyCapped(res)%>();
+		if (!this.<%=prop.getPropertyName(res)%>.contains(<%=prop.getPropertyName()%>))
+			return;
+<%				} %>
+		if (!_model.contains(_resource, <%=prop.getPropertyName()%>Property, createLiteral(<%=prop.getPropertyName()%>)))
+			return;
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		this.<%=prop.getPropertyName(res)%>.remove(<%=prop.getPropertyName()%>);
+<%				} %>
+		_model.removeAll(_resource, <%=prop.getPropertyName()%>Property, createLiteral(<%=prop.getPropertyName()%>));
+	}
+
+<%   		} %>
+<%   } %>
+<%	 if (prop.isSingleValued() && prop.isObjectProperty()) { %>
+<%			for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%          Resource res = (Resource)iter2.next();%>
+	public <%=prop.getReturnType(res)%> get<%=prop.getPropertyCapped(res)%>() throws JastorException {
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		if (<%=prop.getPropertyName(res)%> != null)
+			return <%=prop.getPropertyName(res)%>;
+<% 			} %>
+		com.hp.hpl.jena.rdf.model.Statement stmt = _model.getProperty(_resource, <%=prop.getPropertyName()%>Property);
+		if (stmt == null)
+			return null;
+		if (!stmt.getObject().canAs(com.hp.hpl.jena.rdf.model.Resource.class))
+			throw new JastorInvalidRDFNodeException(uri() + ": <%=prop.getPropertyName(res)%> getProperty() in <%=oc.getInterfaceFullClassname()%> model not Resource", stmt.getObject());
+		com.hp.hpl.jena.rdf.model.Resource resource = (com.hp.hpl.jena.rdf.model.Resource) stmt.getObject().as(com.hp.hpl.jena.rdf.model.Resource.class);
+<%          if (res != OntologyProperty.DEFAULT_RANGE && !prop.getRangeOntologyClass(res).getURI().equals(com.hp.hpl.jena.vocabulary.RDFS.Resource.getURI())) { %>
+		if (!_model.contains(resource,RDF.type,<%=prop.getRangeOntologyClass(res).getInterfaceFullClassname()%>.TYPE))
+			return null;
+<%			} %>
+<% 			if (ctx.isGeneratePropertyCache())  { %>
+		<%=prop.getPropertyName(res)%> = <%=prop.getRangeOntologyClass(res).getFactoryFullClassname()%>.get<%=prop.getRangeOntologyClass(res).getInterfaceClassname()%>(resource,_model);
+		return <%=prop.getPropertyName(res)%>;
+<%			} else { %>
+		return <%=prop.getRangeOntologyClass(res).getFactoryFullClassname()%>.get<%=prop.getRangeOntologyClass(res).getInterfaceClassname()%>(resource,_model);
+<%			} %>
+	}
+
+	public void set<%=prop.getPropertyCapped()%>(<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%>) throws JastorException {
+		if (_model.contains(_resource,<%=prop.getPropertyName()%>Property)) {
+			_model.removeAll(_resource,<%=prop.getPropertyName()%>Property,null);
+		}
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		this.<%=prop.getPropertyName(res)%> = <%=prop.getPropertyName()%>;
+<% 			} %>
+		if (<%=prop.getPropertyName()%> != null) {
+			_model.add(_model.createStatement(_resource,<%=prop.getPropertyName()%>Property, <%=prop.getPropertyName()%>.resource()));
+		}			
+	}
+		
+	public <%=prop.getReturnType(res)%> set<%=prop.getPropertyCapped(res)%>() throws JastorException {
+		if (_model.contains(_resource,<%=prop.getPropertyName()%>Property)) {
+			_model.removeAll(_resource,<%=prop.getPropertyName()%>Property,null);
+		}
+		<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%> = <%=prop.getRangeOntologyClass(res).getFactoryFullClassname()%>.create<%=prop.getRangeOntologyClass(res).getInterfaceClassname()%>(_model.createResource(),_model);
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		this.<%=prop.getPropertyName(res)%> = <%=prop.getPropertyName()%>;
+<% 			} %>
+		_model.add(_model.createStatement(_resource,<%=prop.getPropertyName()%>Property, <%=prop.getPropertyName()%>.resource()));
+		return <%=prop.getPropertyName()%>;
+	}
+	
+	public <%=prop.getReturnType(res)%> set<%=prop.getPropertyCapped(res)%>(com.hp.hpl.jena.rdf.model.Resource resource) throws JastorException {
+<% 			if (ctx.isUseStrictTypeChecking() && !prop.getRangeOntologyClass(res).getURI().equals(com.hp.hpl.jena.vocabulary.RDFS.Resource.getURI())) { %>
+		if (!_model.contains(resource,RDF.type,<%=prop.getRangeOntologyClass(res).getInterfaceFullClassname()%>.TYPE))
+			throw new JastorException("Resource " + resource + " not of type " + <%=prop.getRangeOntologyClass(res).getInterfaceFullClassname()%>.TYPE);
+<% 			} %>
+		if (_model.contains(_resource,<%=prop.getPropertyName()%>Property)) {
+			_model.removeAll(_resource,<%=prop.getPropertyName()%>Property,null);
+		}
+		<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%> = <%=prop.getRangeOntologyClass(res).getFactoryFullClassname()%>.get<%=prop.getRangeOntologyClass(res).getInterfaceClassname()%>(resource,_model);
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		this.<%=prop.getPropertyName(res)%> = <%=prop.getPropertyName()%>;
+<% 			} %>
+		_model.add(_model.createStatement(_resource,<%=prop.getPropertyName()%>Property, <%=prop.getPropertyName()%>.resource()));
+		return <%=prop.getPropertyName()%>;
+	}
+	
+<%       } %>
+<%  } %>
+<%	 if (prop.isMultiValued() && prop.isObjectProperty()) { %>
+<%			for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%          Resource res = (Resource)iter2.next();%>
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+	private void init<%=prop.getPropertyCapped(res)%>() throws JastorException {
+		this.<%=prop.getPropertyName(res)%> = new java.util.ArrayList();
+		StmtIterator it = _model.listStatements(_resource, <%=prop.getPropertyName()%>Property, (RDFNode)null);
+		while(it.hasNext()) {
+			com.hp.hpl.jena.rdf.model.Statement stmt = (com.hp.hpl.jena.rdf.model.Statement)it.next();
+			if (!stmt.getObject().canAs(com.hp.hpl.jena.rdf.model.Resource.class))
+				throw new JastorInvalidRDFNodeException (uri() + ": One of the <%=prop.getURI()%> properties in <%=oc.getInterfaceClassname()%> model not a Resource", stmt.getObject());
+			com.hp.hpl.jena.rdf.model.Resource resource = (com.hp.hpl.jena.rdf.model.Resource) stmt.getObject().as(com.hp.hpl.jena.rdf.model.Resource.class);
+<%          	if (res != OntologyProperty.DEFAULT_RANGE && !prop.getRangeOntologyClass(res).getURI().equals(com.hp.hpl.jena.vocabulary.RDFS.Resource.getURI())) { %>
+			if (_model.contains(resource,RDF.type,<%=prop.getRangeOntologyClass(res).getInterfaceFullClassname()%>.TYPE)) {
+<%				} else { %>
+			if (true) { // don't check resource type if the property range is Resource
+<%			    } %>
+				<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%> = <%=prop.getRangeOntologyClass(res).getFactoryFullClassname()%>.get<%=prop.getRangeOntologyClass(res).getInterfaceClassname()%>(resource,_model);
+				this.<%=prop.getPropertyName(res)%>.add(<%=prop.getPropertyName()%>);
+			}
+		}
+	}
+<% 			} %>
+
+	public java.util.Iterator get<%=prop.getPropertyCapped(res)%>() throws JastorException {
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		if (<%=prop.getPropertyName(res)%> == null)
+			init<%=prop.getPropertyCapped(res)%>();
+		return new com.ibm.adtech.jastor.util.CachedPropertyIterator(<%=prop.getPropertyName(res)%>,_resource,<%=prop.getPropertyName()%>Property,true);
+<% 			} else { %>
+<%				if (res != OntologyProperty.DEFAULT_RANGE) { %>
+		return new com.ibm.adtech.jastor.util.PropertyIterator(_resource,<%=prop.getPropertyName()%>Property,<%=prop.getRangeOntologyClass(res).getInterfaceFullClassname()%>.TYPE) {	
+<%				} else  { %>
+		return new com.ibm.adtech.jastor.util.PropertyIterator(_resource,<%=prop.getPropertyName()%>Property,null) {
+<%		        } %>
+			public Object getPropertyValue(RDFNode value) {
+				com.hp.hpl.jena.rdf.model.Resource resource = (com.hp.hpl.jena.rdf.model.Resource) value.as(com.hp.hpl.jena.rdf.model.Resource.class);
+				try {
+					return <%=prop.getRangeOntologyClass(res).getFactoryFullClassname()%>.get<%=prop.getRangeOntologyClass(res).getInterfaceClassname()%>(resource,_model);
+				} catch (JastorException e) {
+					throw new java.util.NoSuchElementException(e.getMessage());
+				}
+			}
+			};
+<%			} %>
+	}
+
+	public void add<%=prop.getPropertyCapped()%>(<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%>) throws JastorException {
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		if (this.<%=prop.getPropertyName(res)%> == null)
+			init<%=prop.getPropertyCapped(res)%>();
+		if (this.<%=prop.getPropertyName(res)%>.contains(<%=prop.getPropertyName()%>)) {
+			this.<%=prop.getPropertyName(res)%>.remove(<%=prop.getPropertyName()%>);
+			this.<%=prop.getPropertyName(res)%>.add(<%=prop.getPropertyName()%>);
+			return;
+		}
+		this.<%=prop.getPropertyName(res)%>.add(<%=prop.getPropertyName()%>);
+<% 			} %>
+		_model.add(_model.createStatement(_resource,<%=prop.getPropertyName()%>Property,<%=prop.getPropertyName()%>.resource()));
+	}
+	
+	public <%=prop.getReturnType(res)%> add<%=prop.getPropertyCapped(res)%>() throws JastorException {
+		<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%> = <%=prop.getRangeOntologyClass(res).getFactoryFullClassname()%>.create<%=prop.getRangeOntologyClass(res).getInterfaceClassname()%>(_model.createResource(),_model);
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		if (this.<%=prop.getPropertyName(res)%> == null)
+			init<%=prop.getPropertyCapped(res)%>();
+		this.<%=prop.getPropertyName(res)%>.add(<%=prop.getPropertyName()%>);
+<%				} %>
+		_model.add(_model.createStatement(_resource,<%=prop.getPropertyName()%>Property,<%=prop.getPropertyName()%>.resource()));
+		return <%=prop.getPropertyName()%>;
+	}
+	
+	public <%=prop.getReturnType(res)%> add<%=prop.getPropertyCapped(res)%>(com.hp.hpl.jena.rdf.model.Resource resource) throws JastorException {
+<% 			if (ctx.isUseStrictTypeChecking() && !prop.getRangeOntologyClass(res).getURI().equals(com.hp.hpl.jena.vocabulary.RDFS.Resource.getURI())) { %>
+		if (!_model.contains(resource,RDF.type,<%=prop.getRangeOntologyClass(res).getInterfaceFullClassname()%>.TYPE))
+			throw new JastorException("Resource " + resource + " not of type " + <%=prop.getRangeOntologyClass(res).getInterfaceFullClassname()%>.TYPE);
+<% 			} %>
+		<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%> = <%=prop.getRangeOntologyClass(res).getFactoryFullClassname()%>.get<%=prop.getRangeOntologyClass(res).getInterfaceClassname()%>(resource,_model);
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		if (this.<%=prop.getPropertyName(res)%> == null)
+			init<%=prop.getPropertyCapped(res)%>();
+		if (this.<%=prop.getPropertyName(res)%>.contains(<%=prop.getPropertyName()%>))
+			return <%=prop.getPropertyName()%>;
+		this.<%=prop.getPropertyName(res)%>.add(<%=prop.getPropertyName()%>);
+<%				} %>
+		_model.add(_model.createStatement(_resource,<%=prop.getPropertyName()%>Property,<%=prop.getPropertyName()%>.resource()));
+		return <%=prop.getPropertyName()%>;
+	}
+	
+	public void remove<%=prop.getPropertyCapped()%>(<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%>) throws JastorException {
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		if (this.<%=prop.getPropertyName(res)%> == null)
+			init<%=prop.getPropertyCapped(res)%>();
+		if (!this.<%=prop.getPropertyName(res)%>.contains(<%=prop.getPropertyName()%>))
+			return;
+<%				} %>
+		if (!_model.contains(_resource, <%=prop.getPropertyName()%>Property, <%=prop.getPropertyName()%>.resource()))
+			return;
+<% 			if (ctx.isGeneratePropertyCache()) { %>
+		this.<%=prop.getPropertyName(res)%>.remove(<%=prop.getPropertyName()%>);
+<%				} %>
+		_model.removeAll(_resource, <%=prop.getPropertyName()%>Property, <%=prop.getPropertyName()%>.resource());
+	}
+		
+<%    } // end alt return types %> 
+<%  }  // end mulitvalued-object %>
+<% } // end all props%> 
+
+<% if (ctx.isGenerateListeners()) { %>
+
+	private java.util.ArrayList listeners;
+	
+	public void registerListener(ThingListener listener) {
+		if (!(listener instanceof <%=oc.getInterfaceClassname()%>Listener))
+			throw new IllegalArgumentException("ThingListener must be instance of <%=oc.getListenerClassname()%>"); 
+		if (listeners == null)
+			setupModelListener();
+		if(!this.listeners.contains(listener)){
+			this.listeners.add((<%=oc.getListenerClassname()%>)listener);
+		}
+	}
+	
+	public void unregisterListener(ThingListener listener) {
+		if (!(listener instanceof <%=oc.getInterfaceClassname()%>Listener))
+			throw new IllegalArgumentException("ThingListener must be instance of <%=oc.getListenerClassname()%>"); 
+		if (listeners == null)
+			return;
+		if (this.listeners.contains(listener)){
+			listeners.remove(listener);
+		}
+	}
+
+<% } %>
+
+<% if (ctx.isGeneratePropertyCache() || ctx.isGenerateListeners()) { %>
+
+	
+		public void addedStatement(com.hp.hpl.jena.rdf.model.Statement stmt) {
+
+<% 	for (java.util.Iterator iter = oc.listProperties(true).iterator(); iter.hasNext();) { %>
+<% 		OntologyProperty prop = (OntologyProperty)iter.next(); %>
+			if (stmt.getPredicate().equals(<%=prop.getPropertyName()%>Property)) {
+<%			if (prop.isSingleValued() && prop.isDatatypeProperty()) { %>
+				if (!stmt.getObject().canAs(com.hp.hpl.jena.rdf.model.Literal.class))
+					return;
+				com.hp.hpl.jena.rdf.model.Literal literal = (com.hp.hpl.jena.rdf.model.Literal) stmt.getObject().as(com.hp.hpl.jena.rdf.model.Literal.class);
+<%				if (ctx.isGeneratePropertyCache()) { %>
+<%					for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%          		Resource res = (Resource)iter2.next();%>
+<% 					if (prop.getReturnType(res).equals("com.hp.hpl.jena.rdf.model.Literal")) { %>
+				<%=prop.getPropertyName(res)%> = literal;
+<%						}  else {%>
+				<%=prop.getPropertyName(res)%> = (<%=prop.getReturnType(res)%>)Util.fixLiteral(<%=ctx.isUseTypedLiterals()%>,literal,"<%=prop.getReturnType(res)%>","<%=prop.getRangeURI(res)%>");
+<%						} %>
+<%					} %>
+<%				} %>
+<%				if (ctx.isGenerateListeners()) { %>
+				if (listeners != null) {
+					java.util.ArrayList consumers;
+					synchronized (listeners) {
+						consumers = (java.util.ArrayList) listeners.clone();
+					}
+					for(java.util.Iterator iter=consumers.iterator();iter.hasNext();){
+						<%=oc.getInterfaceClassname()%>Listener listener=(<%=oc.getInterfaceClassname()%>Listener)iter.next();
+						listener.<%=prop.getPropertyName()%>Changed(<%=oc.getImplFullClassname()%>.this);
+					}
+				}
+<%				} %>
+<%			} %>
+<%			if (prop.isMultiValued() && prop.isDatatypeProperty()) { %>
+				if (!stmt.getObject().canAs(com.hp.hpl.jena.rdf.model.Literal.class))
+					return;
+				com.hp.hpl.jena.rdf.model.Literal literal = (com.hp.hpl.jena.rdf.model.Literal) stmt.getObject().as(com.hp.hpl.jena.rdf.model.Literal.class);
+				//Object obj = literal.getValue();
+<%				for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%          	Resource res = (Resource)iter2.next();%>
+<% 				if (prop.getReturnType(res).equals("com.hp.hpl.jena.rdf.model.Literal")) { %>
+<% 					if (ctx.isGeneratePropertyCache()) { %>
+				if (<%=prop.getPropertyName(res)%> == null)
+					try {
+						init<%=prop.getPropertyCapped(res)%>();
+					} catch (JastorException e) {
+						e.printStackTrace();
+						return;
+					}
+				if (!<%=prop.getPropertyName(res)%>.contains(literal))
+					<%=prop.getPropertyName(res)%>.add(literal);
+<%					} %>
+<%						if (ctx.isGenerateListeners()) { %>
+				if (listeners != null) {
+					java.util.ArrayList consumersFor<%=prop.getPropertyCapped(res)%>;
+					synchronized (listeners) {
+						consumersFor<%=prop.getPropertyCapped(res)%> = (java.util.ArrayList) listeners.clone();
+					}
+					for(java.util.Iterator iter=consumersFor<%=prop.getPropertyCapped(res)%>.iterator();iter.hasNext();){
+						<%=oc.getInterfaceClassname()%>Listener listener=(<%=oc.getInterfaceClassname()%>Listener)iter.next();
+						listener.<%=prop.getPropertyName()%>Added(<%=oc.getImplFullClassname()%>.this,literal);
+					}
+				}
+<%						} %>
+<%				}  else {%>
+				Object obj = Util.fixLiteral(<%=ctx.isUseTypedLiterals()%>,literal,"<%=prop.getReturnType(res)%>","<%=prop.getRangeURI(res)%>");
+<% 					if (ctx.isGeneratePropertyCache()) { %>
+				if (<%=prop.getPropertyName(res)%> == null) {
+					try {
+						init<%=prop.getPropertyCapped(res)%>();
+					} catch (JastorException e) {
+						e.printStackTrace();
+						return;
+					}
+				}
+				if (obj != null && !<%=prop.getPropertyName(res)%>.contains(obj))
+					<%=prop.getPropertyName(res)%>.add(obj);
+<%					} %>
+<%						if (ctx.isGenerateListeners()) { %>
+				java.util.ArrayList consumersFor<%=prop.getPropertyCapped(res)%>;
+				if (listeners != null) {
+					synchronized (listeners) {
+						consumersFor<%=prop.getPropertyCapped(res)%> = (java.util.ArrayList) listeners.clone();
+					}
+					for(java.util.Iterator iter=consumersFor<%=prop.getPropertyCapped(res)%>.iterator();iter.hasNext();){
+						<%=oc.getInterfaceClassname()%>Listener listener=(<%=oc.getInterfaceClassname()%>Listener)iter.next();
+						listener.<%=prop.getPropertyName()%>Added(<%=oc.getImplFullClassname()%>.this,(<%=prop.getReturnType(res)%>)obj);
+					}
+				}
+<%						} %>
+<%					} %>
+<%				} %>
+<%			} %>
+<%			if (prop.isSingleValued() && prop.isObjectProperty()) { %>
+				if (!stmt.getObject().canAs(com.hp.hpl.jena.rdf.model.Resource.class))
+					return;
+				com.hp.hpl.jena.rdf.model.Resource resource = (com.hp.hpl.jena.rdf.model.Resource) stmt.getObject().as(com.hp.hpl.jena.rdf.model.Resource.class);
+<%				if (ctx.isGeneratePropertyCache()) { %>
+<%					for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%          			Resource res = (Resource)iter2.next(); %>
+				<%=prop.getPropertyName(res)%> = null;
+<%          			if (res != OntologyProperty.DEFAULT_RANGE && !prop.getRangeOntologyClass(res).getURI().equals(com.hp.hpl.jena.vocabulary.RDFS.Resource.getURI())) { %>
+				if (_model.contains(resource,RDF.type,<%=prop.getRangeOntologyClass(res).getInterfaceFullClassname()%>.TYPE)) {
+<%						} else { %>
+				if (true) { // don't check resource type if the property range is Resource
+<%			    		} %>
+					try {
+						<%=prop.getPropertyName(res)%> = <%=prop.getRangeOntologyClass(res).getFactoryFullClassname()%>.get<%=prop.getRangeOntologyClass(res).getInterfaceClassname()%>(resource,_model);
+					} catch (JastorException e) {
+						//e.printStackTrace();
+					}
+				}
+<%					} %>
+<%				} %>
+<%				if (ctx.isGenerateListeners()) { %>
+				if (listeners != null) {
+					java.util.ArrayList consumers;
+					synchronized (listeners) {
+						consumers = (java.util.ArrayList) listeners.clone();
+					}
+					for(java.util.Iterator iter=consumers.iterator();iter.hasNext();){
+						<%=oc.getInterfaceClassname()%>Listener listener=(<%=oc.getInterfaceClassname()%>Listener)iter.next();
+						listener.<%=prop.getPropertyName()%>Changed(<%=oc.getImplFullClassname()%>.this);
+					}
+				}
+<%				} %>
+<%			} %>
+<%			if (prop.isMultiValued() && prop.isObjectProperty()) { %>
+				if (!stmt.getObject().canAs(com.hp.hpl.jena.rdf.model.Resource.class))
+					return;
+				com.hp.hpl.jena.rdf.model.Resource resource = (com.hp.hpl.jena.rdf.model.Resource) stmt.getObject().as(com.hp.hpl.jena.rdf.model.Resource.class);
+<%				for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%					Resource res = (Resource)iter2.next(); %>
+<%          		if (res != OntologyProperty.DEFAULT_RANGE && !prop.getRangeOntologyClass(res).getURI().equals(com.hp.hpl.jena.vocabulary.RDFS.Resource.getURI())) { %>
+				if (_model.contains(resource,RDF.type,<%=prop.getRangeOntologyClass(res).getInterfaceFullClassname()%>.TYPE)) {
+<%					} else { %>
+				if (true) { // don't check resource type if the property range is Resource
+<%			   		} %>
+					<%=prop.getReturnType(res)%> _<%=prop.getPropertyName(res)%> = null;
+					try {
+						_<%=prop.getPropertyName(res)%> = <%=prop.getRangeOntologyClass(res).getFactoryFullClassname()%>.get<%=prop.getRangeOntologyClass(res).getInterfaceClassname()%>(resource,_model);
+					} catch (JastorException e) {
+						//e.printStackTrace();
+					}
+<% 					if (ctx.isGeneratePropertyCache()) { %>
+					if (<%=prop.getPropertyName(res)%> == null) {
+						try {
+							init<%=prop.getPropertyCapped(res)%>();
+						} catch (JastorException e) {
+							e.printStackTrace();
+							return;
+						}
+					}
+					if (!<%=prop.getPropertyName(res)%>.contains(_<%=prop.getPropertyName(res)%>))
+						<%=prop.getPropertyName(res)%>.add(_<%=prop.getPropertyName(res)%>);
+<%					} %>
+<%					if (ctx.isGenerateListeners()) { %>
+					if (listeners != null) {
+						java.util.ArrayList consumersFor<%=prop.getPropertyCapped(res)%>;
+						synchronized (listeners) {
+							consumersFor<%=prop.getPropertyCapped(res)%> = (java.util.ArrayList) listeners.clone();
+						}
+						for(java.util.Iterator iter=consumersFor<%=prop.getPropertyCapped(res)%>.iterator();iter.hasNext();){
+							<%=oc.getInterfaceClassname()%>Listener listener=(<%=oc.getInterfaceClassname()%>Listener)iter.next();
+							listener.<%=prop.getPropertyName()%>Added(<%=oc.getImplFullClassname()%>.this,_<%=prop.getPropertyName(res)%>);
+						}
+					}
+<%					} %>
+				}
+<%				} %>
+<%			} %>
+				return;
+			}
+<%	} %>
+		}
+		
+		public void removedStatement(com.hp.hpl.jena.rdf.model.Statement stmt) {
+//			if (!stmt.getSubject().equals(_resource))
+//				return;
+<% 	for (java.util.Iterator iter = oc.listProperties(true).iterator(); iter.hasNext();) { %>
+<% 		OntologyProperty prop = (OntologyProperty)iter.next(); %>
+			if (stmt.getPredicate().equals(<%=prop.getPropertyName()%>Property)) {
+<%			if (prop.isSingleValued() && prop.isDatatypeProperty()) { %>
+				if (!stmt.getObject().canAs(com.hp.hpl.jena.rdf.model.Literal.class))
+					return;
+				com.hp.hpl.jena.rdf.model.Literal literal = (com.hp.hpl.jena.rdf.model.Literal) stmt.getObject().as(com.hp.hpl.jena.rdf.model.Literal.class);
+				//Object obj = literal.getValue();
+<%				if (ctx.isGeneratePropertyCache()) { %>
+<%					for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%          		Resource res = (Resource)iter2.next();%>
+<% 					if (prop.getReturnType(res).equals("com.hp.hpl.jena.rdf.model.Literal")) { %>
+				if (<%=prop.getPropertyName(res)%> != null && <%=prop.getPropertyName(res)%>.equals(literal))
+					<%=prop.getPropertyName(res)%> = null;
+<%						}  else {%>
+				Object obj = Util.fixLiteral(<%=ctx.isUseTypedLiterals()%>,literal,"<%=prop.getReturnType(res)%>","<%=prop.getRangeURI(res)%>");
+				if (<%=prop.getPropertyName(res)%> != null && <%=prop.getPropertyName(res)%>.equals(obj))
+					<%=prop.getPropertyName(res)%> = null;
+<%						} %>
+<%					} %>
+<%				} %>
+<%				if (ctx.isGenerateListeners()) { %>
+				if (listeners != null) {
+					java.util.ArrayList consumers;
+					synchronized (listeners) {
+						consumers = (java.util.ArrayList) listeners.clone();
+					}
+					for(java.util.Iterator iter=consumers.iterator();iter.hasNext();){
+						<%=oc.getInterfaceClassname()%>Listener listener=(<%=oc.getInterfaceClassname()%>Listener)iter.next();
+						listener.<%=prop.getPropertyName()%>Changed(<%=oc.getImplFullClassname()%>.this);
+					}
+				}
+<%				} %>
+<%			} %>
+<%			if (prop.isMultiValued() && prop.isDatatypeProperty()) { %>
+				if (!stmt.getObject().canAs(com.hp.hpl.jena.rdf.model.Literal.class))
+					return;
+				com.hp.hpl.jena.rdf.model.Literal literal = (com.hp.hpl.jena.rdf.model.Literal) stmt.getObject().as(com.hp.hpl.jena.rdf.model.Literal.class);
+				//Object obj = literal.getValue();
+<%				for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%          	Resource res = (Resource)iter2.next();%>
+<% 				if (prop.getReturnType(res).equals("com.hp.hpl.jena.rdf.model.Literal")) { %>
+<% 					if (ctx.isGeneratePropertyCache()) { %>
+				if (<%=prop.getPropertyName(res)%> != null) {
+					if (<%=prop.getPropertyName(res)%>.contains(literal))
+						<%=prop.getPropertyName(res)%>.remove(literal);
+				}
+<%						} %>
+<%						if (ctx.isGenerateListeners()) { %>
+				if (listeners != null) {
+					java.util.ArrayList consumersFor<%=prop.getPropertyCapped(res)%>;
+					synchronized (listeners) {
+						consumersFor<%=prop.getPropertyCapped(res)%> = (java.util.ArrayList) listeners.clone();
+					}
+					for(java.util.Iterator iter=consumersFor<%=prop.getPropertyCapped(res)%>.iterator();iter.hasNext();){
+						<%=oc.getInterfaceClassname()%>Listener listener=(<%=oc.getInterfaceClassname()%>Listener)iter.next();
+						listener.<%=prop.getPropertyName()%>Removed(<%=oc.getImplFullClassname()%>.this,literal);
+					}
+				}
+<%						} %>
+<%					} else {%>
+				Object obj = Util.fixLiteral(<%=ctx.isUseTypedLiterals()%>,literal,"<%=prop.getReturnType(res)%>","<%=prop.getRangeURI(res)%>");
+<% 				if (ctx.isGeneratePropertyCache()) { %>
+				if (<%=prop.getPropertyName(res)%> != null) {
+					if (<%=prop.getPropertyName(res)%>.contains(obj))
+						<%=prop.getPropertyName(res)%>.remove(obj);
+				}
+<%				} %>
+<%						if (ctx.isGenerateListeners()) { %>
+				if (listeners != null) {
+					java.util.ArrayList consumers;
+					synchronized (listeners) {
+						consumers = (java.util.ArrayList) listeners.clone();
+					}
+					for(java.util.Iterator iter=consumers.iterator();iter.hasNext();){
+						<%=oc.getInterfaceClassname()%>Listener listener=(<%=oc.getInterfaceClassname()%>Listener)iter.next();
+						listener.<%=prop.getPropertyName()%>Removed(<%=oc.getImplFullClassname()%>.this,(<%=prop.getReturnType(res)%>)obj);
+					}
+				}
+<%						} %>
+<%					} %>
+<%				} %>
+<%			} %>
+<%			if (prop.isSingleValued() && prop.isObjectProperty()) { %>
+				if (!stmt.getObject().canAs(com.hp.hpl.jena.rdf.model.Resource.class))
+					return;
+				com.hp.hpl.jena.rdf.model.Resource resource = (com.hp.hpl.jena.rdf.model.Resource) stmt.getObject().as(com.hp.hpl.jena.rdf.model.Resource.class);
+<%				if (ctx.isGeneratePropertyCache()) { %>
+<%					for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%          		Resource res = (Resource)iter2.next(); %>
+					if (<%=prop.getPropertyName(res)%> != null && <%=prop.getPropertyName(res)%>.resource().equals(resource))
+						<%=prop.getPropertyName(res)%> = null;				
+<%					} %>
+<%				} %>
+<%				if (ctx.isGenerateListeners()) { %>
+				if (listeners != null) {
+					java.util.ArrayList consumers;
+					synchronized (listeners) {
+						consumers = (java.util.ArrayList) listeners.clone();
+					}
+					for(java.util.Iterator iter=consumers.iterator();iter.hasNext();){
+						<%=oc.getInterfaceClassname()%>Listener listener=(<%=oc.getInterfaceClassname()%>Listener)iter.next();
+						listener.<%=prop.getPropertyName()%>Changed(<%=oc.getImplFullClassname()%>.this);
+					}
+				}
+<%				} %>
+<%			} %>
+<%			if (prop.isMultiValued() && prop.isObjectProperty()) { %>
+				if (!stmt.getObject().canAs(com.hp.hpl.jena.rdf.model.Resource.class))
+					return;
+				com.hp.hpl.jena.rdf.model.Resource resource = (com.hp.hpl.jena.rdf.model.Resource) stmt.getObject().as(com.hp.hpl.jena.rdf.model.Resource.class);
+<%				for (java.util.Iterator iter2 = prop.listAllRanges();iter2.hasNext();) { %>
+<%					Resource res = (Resource)iter2.next(); %>
+<%          		if (res != OntologyProperty.DEFAULT_RANGE && !prop.getRangeOntologyClass(res).getURI().equals(com.hp.hpl.jena.vocabulary.RDFS.Resource.getURI())) { %>
+				if (_model.contains(resource,RDF.type,<%=prop.getRangeOntologyClass(res).getInterfaceFullClassname()%>.TYPE)) {
+<%					} else { %>
+				if (true) { // don't check resource type if the property range is Resource
+<%			   		} %>
+<% 					if (ctx.isGeneratePropertyCache()) { %>
+					<%=prop.getReturnType(res)%> _<%=prop.getPropertyName(res)%> = null;
+					if (<%=prop.getPropertyName(res)%> != null) {
+						boolean found = false;
+						for (int i=0;i<<%=prop.getPropertyName(res)%>.size();i++) {
+							<%=prop.getReturnType(res)%> __item = (<%=prop.getReturnType(res)%>) <%=prop.getPropertyName(res)%>.get(i);
+							if (__item.resource().equals(resource)) {
+								found = true;
+								_<%=prop.getPropertyName(res)%> = __item;
+								break;
+							}
+						}
+						if (found)
+							<%=prop.getPropertyName(res)%>.remove(_<%=prop.getPropertyName(res)%>);
+						else {
+							try {
+								_<%=prop.getPropertyName(res)%> = <%=prop.getRangeOntologyClass(res).getFactoryFullClassname()%>.get<%=prop.getRangeOntologyClass(res).getInterfaceClassname()%>(resource,_model);
+							} catch (JastorException e) {
+							}
+						}
+					} else {
+						try {
+							_<%=prop.getPropertyName(res)%> = <%=prop.getRangeOntologyClass(res).getFactoryFullClassname()%>.get<%=prop.getRangeOntologyClass(res).getInterfaceClassname()%>(resource,_model);
+						} catch (JastorException e) {
+						}
+					}
+<%					} else { %>
+					<%=prop.getReturnType(res)%> _<%=prop.getPropertyName(res)%> = null;
+					try {
+						_<%=prop.getPropertyName(res)%> = <%=prop.getRangeOntologyClass(res).getFactoryFullClassname()%>.get<%=prop.getRangeOntologyClass(res).getInterfaceClassname()%>(resource,_model);
+					} catch (JastorException e) {
+					}
+<%					} %>
+<%					if (ctx.isGenerateListeners()) { %>
+					if (listeners != null) {
+						java.util.ArrayList consumersFor<%=prop.getPropertyCapped(res)%>;
+						synchronized (listeners) {
+							consumersFor<%=prop.getPropertyCapped(res)%> = (java.util.ArrayList) listeners.clone();
+						}
+						for(java.util.Iterator iter=consumersFor<%=prop.getPropertyCapped(res)%>.iterator();iter.hasNext();){
+							<%=oc.getInterfaceClassname()%>Listener listener=(<%=oc.getInterfaceClassname()%>Listener)iter.next();
+							listener.<%=prop.getPropertyName()%>Removed(<%=oc.getImplFullClassname()%>.this,_<%=prop.getPropertyName(res)%>);
+						}
+					}
+<%					} %>
+				}
+<%				} %>
+<%			} %>
+				return;
+			}
+<%	} %>
+		}
+
+	//}
+	
+<% } %>
+
+
+}

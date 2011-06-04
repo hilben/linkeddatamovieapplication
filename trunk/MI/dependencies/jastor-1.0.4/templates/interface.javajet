@@ -1,0 +1,227 @@
+<% //(C) Copyright IBM Corporation 2005  All Rights Reserved. %>
+
+<% // author: Ben Szekely (<a href="mailto:bhszekel@us.ibm.com">bhszekel@us.ibm.com</a>) %>
+<%@ jet skeleton="ontologyclass.skeleton" package="com.ibm.adtech.jastor.jet" class="InterfaceTemplate" imports="java.util.* com.ibm.adtech.jastor.*  com.ibm.adtech.jastor.inference.* com.hp.hpl.jena.rdf.model.*;" %>
+<% //OntologyClass oc = (OntologyClass)argument; %>
+<% JastorContext ctx = oc.getContext(); %>
+
+package <%=oc.getPackageName()%>;
+
+import com.hp.hpl.jena.rdf.model.*;
+
+/**
+ * Interface for <%=oc.getComment().getLabel()%> ontology class<br>
+ * Use the <%=oc.getFactoryFullClassname()%> to create instances of this interface.
+ * <p>(URI: <%=oc.getURI() %>)</p>
+ * <br>
+<% if (oc.getComment().listRDFSPropertyNames().length > 0) { %>
+ * RDF Schema Standard Properties <br>
+<% 	String[] names = oc.getComment().listRDFSPropertyNames(); %>
+<% 	for (int i=0;i<names.length;i++) { %>
+ * 	<%=names[i] + " : " + oc.getComment().getRDFSProperty(names[i])%> <br>
+<% 	} %>
+<% } %>
+ * <br>
+<% if (oc.getComment().listDCPropertyNames().length > 0) { %>
+ * Dublin Core Standard Properties <br>
+<% 	String[] names = oc.getComment().listDCPropertyNames(); %>
+<% 	for (int i=0;i<names.length;i++) { %>
+ * 	<%=names[i] + " : " + oc.getComment().getDCProperty(names[i])%> <br>
+<% 	} %>
+<% } %>
+ * <br>
+<% if (oc.getComment().getVersionInfo() != null) { %>
+ *	@version <%=oc.getComment().getVersionInfo()%>
+<% } %>
+ */
+public interface <%=oc.getInterfaceClassname()%> extends 
+<% for (Iterator iter = oc.listImmediateExtensionClasses().iterator();iter.hasNext();) { %>
+<% OntologyClass extClass = (OntologyClass)iter.next();%><%=extClass.getInterfaceFullClassname()%>, <% } %><%=ctx.getThingInterface().getName()%> {
+	
+	/**
+	 * The rdf:type for this ontology class
+     */
+	public static final Resource TYPE = ResourceFactory.createResource("<%=oc.getURI()%>");
+	
+<% for (Iterator iter = oc.listProperties(false).iterator(); iter.hasNext();) {%>
+<% OntologyProperty prop = (OntologyProperty)iter.next(); %>
+
+	/**
+	 * The Jena Property for <%=prop.getPropertyName()%> 
+	 * <p>(URI: <%=prop.getURI()%>)</p>
+	 * <br>
+<% 	if (prop.getComment().listRDFSPropertyNames().length > 0) { %>
+	 * <br>
+	 * RDF Schema Standard Properties <br>
+<% 		String[] names = prop.getComment().listRDFSPropertyNames(); %>
+<% 		for (int i=0;i<names.length;i++) { %>
+	 * 	<%=names[i] + " : " + prop.getComment().getRDFSProperty(names[i])%> <br>
+<% 		} %>
+	 * <br>
+<%		} %>
+<% 	if (prop.getComment().listDCPropertyNames().length > 0) { %>
+	 * Dublin Core Standard Properties <br>
+<% 		String[] names = prop.getComment().listDCPropertyNames(); %>
+<% 		for (int i=0;i<names.length;i++) { %>
+	 * 	<%=names[i] + " : " + prop.getComment().getDCProperty(names[i])%> <br>
+<% 		} %>
+	 * <br>
+<% 	} %>  
+<%		if (prop.getComment().getVersionInfo() != null) { %>
+	 * @version <%=prop.getComment().getVersionInfo()%>
+<%		} %>
+	 */
+	public static com.hp.hpl.jena.rdf.model.Property <%=prop.getPropertyName()%>Property = ResourceFactory.createProperty("<%=prop.getURI()%>");
+
+<% } %>
+
+<% for (Iterator iter = oc.listIndividuals().iterator(); iter.hasNext();) {%>
+<%     Resource individual = (Resource)iter.next(); %>
+
+	/**
+	 * Individual for URI: <%=individual.getURI()%>
+	 */
+	public static com.hp.hpl.jena.rdf.model.Resource <%=oc.getIndividualIdentifierName(individual)%> = ResourceFactory.createResource("<%=individual.getURI()%>");
+
+<% } %>
+
+<% if (!ctx.isGenerateVocabularyOnly()) { %>
+
+<% 	for (Iterator iter = oc.listProperties(true).iterator(); iter.hasNext();) {%>
+<% 		OntologyProperty prop = (OntologyProperty)iter.next(); %>
+<%			if (prop.isSingleValued() && prop.isDatatypeProperty()) { %>
+<%		   	boolean all = (prop.getRole() == OntologyProperty.ROLE_HERE); %>
+<%				for (Iterator iter2 = prop.listRanges(all,true);iter2.hasNext();) { %>
+<%          	Resource res = (Resource)iter2.next();%>
+	/**
+	 * Gets the '<%=prop.getPropertyName()%>' property value
+	 * @return		{@link <%=prop.getReturnType(res)%>}
+	 * @see			#<%=prop.getPropertyName()%>Property
+	 */
+	public <%=prop.getReturnType(res)%> get<%=prop.getPropertyCapped(res)%>() throws com.ibm.adtech.jastor.JastorException;
+
+	/**
+	 * Sets the '<%=prop.getPropertyName()%>' property value
+	 * @param		{@link <%=prop.getReturnType(res)%>}
+	 * @see			#<%=prop.getPropertyName()%>Property
+	 */
+	public void set<%=prop.getPropertyCapped()%>(<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%>) throws com.ibm.adtech.jastor.JastorException;
+
+<%          } %>
+<%       } %>
+<%			if (prop.isMultiValued() && prop.isDatatypeProperty()) { %>
+<%		   	boolean all = (prop.getRole() == OntologyProperty.ROLE_HERE); %>
+<%				for (Iterator iter2 = prop.listRanges(all,true);iter2.hasNext();) { %>
+<%          	Resource res = (Resource)iter2.next();%>
+	/**
+	 * Iterates through the '<%=prop.getPropertyName()%>' property values.  This Iteartor
+	 * may be used to remove all such values.
+	 * @return		{@link java.util.Iterator} of {@link <%=prop.getReturnType(res)%>}
+	 * @see			#<%=prop.getPropertyName()%>Property
+	 */
+	public java.util.Iterator get<%=prop.getPropertyCapped(res)%>() throws com.ibm.adtech.jastor.JastorException;
+
+	/**
+	 * Add a '<%=prop.getPropertyName()%>' property value
+	 * @param		{@link <%=prop.getReturnType(res)%>}, the value to add
+	 * @see			#<%=prop.getPropertyName()%>Property
+	 */
+	public void add<%=prop.getPropertyCapped()%>(<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%>) throws com.ibm.adtech.jastor.JastorException;
+	
+	/**
+	 * Remove a '<%=prop.getPropertyName()%>' property value. This method should not
+	 * be invoked while iterator through values.  In that case, the remove() method of the Iterator
+	 * itself should be used.
+	 * @param		{@link <%=prop.getReturnType(res)%>}, the value to remove
+	 * @see			#<%=prop.getPropertyName()%>Property
+	 */
+	public void remove<%=prop.getPropertyCapped()%>(<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%>) throws com.ibm.adtech.jastor.JastorException;
+
+<%          } %>
+<%       } %>
+<%			if (prop.isSingleValued() && prop.isObjectProperty()) { %>
+<%		   	boolean all = (prop.getRole() == OntologyProperty.ROLE_HERE); %>
+<%				for (Iterator iter2 = prop.listRanges(all,true);iter2.hasNext();) { %>
+<%          	Resource res = (Resource)iter2.next();%>
+	/**
+	 * Gets the '<%=prop.getPropertyName()%>' property value
+	 * @return		{@link <%=prop.getReturnType(res)%>}
+	 * @see			#<%=prop.getPropertyName()%>Property
+	 */
+	public <%=prop.getReturnType(res)%> get<%=prop.getPropertyCapped(res)%>() throws com.ibm.adtech.jastor.JastorException;
+	
+	/**
+	 * Sets the '<%=prop.getPropertyName()%>' property value
+	 * @param		{@link <%=prop.getReturnType(res)%>}
+	 * @see			#<%=prop.getPropertyName()%>Property
+	 */
+	public void set<%=prop.getPropertyCapped()%>(<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%>) throws com.ibm.adtech.jastor.JastorException;
+	
+	/**
+	 * Sets the '<%=prop.getPropertyName()%>' property value to an anonymous node
+	 * @return		{@link <%=prop.getReturnType(res)%>}, the created value
+	 * @see			#<%=prop.getPropertyName()%>Property
+	 */	
+	public <%=prop.getReturnType(res)%> set<%=prop.getPropertyCapped(res)%>() throws com.ibm.adtech.jastor.JastorException;
+	
+	/**
+	 * Sets the '<%=prop.getPropertyName()%>' property value to the given resource
+	 * The resource argument should have rdf:type <%=prop.getRangeOntologyClass(res).getURI()%>.  That is, this method
+	 * should not be used as a shortcut for creating new objects in the model.
+	 * @param		{@link com.hp.hpl.jena.rdf.model.Resource} must not be be null.
+	 * @return		{@link <%=prop.getReturnType(res)%>}, the newly created value
+	 * @see			#<%=prop.getPropertyName()%>Property
+	 */
+	public <%=prop.getReturnType(res)%> set<%=prop.getPropertyCapped(res)%>(com.hp.hpl.jena.rdf.model.Resource resource) throws com.ibm.adtech.jastor.JastorException;
+	
+<%          } %>
+<%       } %>
+<%			if (prop.isMultiValued() && prop.isObjectProperty()) { %>
+<%		   	boolean all = (prop.getRole() == OntologyProperty.ROLE_HERE); %>
+<%				for (Iterator iter2 = prop.listRanges(all,true);iter2.hasNext();) { %>
+<%          	Resource res = (Resource)iter2.next();%>
+	/**
+	 * Get an Iterator the '<%=prop.getPropertyName()%>' property values.  This Iteartor
+	 * may be used to remove all such values.
+	 * @return		{@link java.util.Iterator} of {@link <%=prop.getReturnType(res)%>}
+	 * @see			#<%=prop.getPropertyName()%>Property
+	 */
+	public java.util.Iterator get<%=prop.getPropertyCapped(res)%>() throws com.ibm.adtech.jastor.JastorException;
+
+	/**
+	 * Adds a value for the '<%=prop.getPropertyName()%>' property
+	 * @param		The {@link <%=prop.getReturnType(res)%>} to add
+	 * @see			#<%=prop.getPropertyName()%>Property
+	 */
+	public void add<%=prop.getPropertyCapped()%>(<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%>) throws com.ibm.adtech.jastor.JastorException;
+	
+	/**
+	 * Adds an anonymous value for the '<%=prop.getPropertyName()%>' property
+	 * @return		The anoymous {@link <%=prop.getReturnType(res)%>} created
+	 * @see			#<%=prop.getPropertyName()%>Property
+	 */
+	public <%=prop.getReturnType(res)%> add<%=prop.getPropertyCapped(res)%>() throws com.ibm.adtech.jastor.JastorException;
+	
+	/**
+	 * 
+	 * The resource argument have rdf:type <%=prop.getRangeOntologyClass(res).getURI()%>.  That is, this method
+	 * should not be used as a shortcut for creating new objects in the model.
+	 * @param		The {@link om.hp.hpl.jena.rdf.model.Resource} to add
+	 * @see			#<%=prop.getPropertyName()%>Property
+	 */
+	public <%=prop.getReturnType(res)%> add<%=prop.getPropertyCapped(res)%>(com.hp.hpl.jena.rdf.model.Resource resource) throws com.ibm.adtech.jastor.JastorException;
+	
+	/**
+	 * Removes a value for the '<%=prop.getPropertyName()%>' property.  This method should not
+	 * be invoked while iterator through values.  In that case, the remove() method of the Iterator
+	 * itself should be used.
+	 * @param		The {@link <%=prop.getReturnType(res)%>} to remove
+	 * @see			#<%=prop.getPropertyName()%>Property
+	 */
+	public void remove<%=prop.getPropertyCapped()%>(<%=prop.getReturnType(res)%> <%=prop.getPropertyName()%>) throws com.ibm.adtech.jastor.JastorException;
+		
+<%          } %>
+<%       } %>
+<% 	} %>
+<% } %>
+}

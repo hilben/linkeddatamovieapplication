@@ -1,0 +1,248 @@
+<project name="com.ibm.adtech.jastor" default="usage" basedir=".">
+	<description>
+        Build file for Jastor.
+    </description>
+
+	<!-- set global properties for this build -->
+	<property file="ant.properties" />
+
+	<property name="build" location="${basedir}/build" />
+	<property name="dist" location="${basedir}/dist" />
+	<property name="docs" location="${basedir}/docs" />
+	<property name="examples" location="${basedir}/examples" />
+
+	<path id="jastor.logging.path">
+		<fileset dir="${jastor.logging}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<path id="jastor.jena.path">
+		<fileset dir="${jastor.jena}">
+			<include name="jena-2.4.jar" />
+			<include name="arq-1.3.jar" />
+		</fileset>
+	</path>
+
+	<path id="jastor.path">
+		<path refid="jastor.jena.path" />
+	</path>
+
+	<target name="usage" description="Print usage for key targets">
+		<echo>	  	    
+        	ant clean - removes the directories: build, lib, dist
+			ant build-jastor - compiles the Jastor code
+			ant build-jastor-dist - builds the jastor distributions	
+		</echo>
+	</target>
+
+	<target name="init">
+		<!-- Create the time stamp -->
+		<tstamp />
+		<!-- Create the build directory structure used by compile -->
+		<mkdir dir="${build}" />
+		<mkdir dir="${dist}" />
+		<mkdir dir="${examples}" />
+	</target>
+
+	<target name="clean">
+		<!--<delete dir="${build.test}" />-->
+		<delete dir="${build}" />
+		<delete dir="${dist}" />
+		<delete dir="${examples}" />
+		<delete dir="${docs}/javadoc" />
+	</target>
+
+	<target name="build-jastor" depends="clean,init" description="Compiles the Jastor code">
+		<javac srcdir="${basedir}/src" destdir="${build}" debug="on">
+			<classpath>
+				<!--<pathelement path="${jastor.path}" />-->
+				<path refid="jastor.path" />
+			</classpath>
+		</javac>
+		<jar basedir="${build}" jarfile="${build}/jastor-${jastor.version}.jar" />
+	</target>
+
+	<patternset id="distfiles">
+		<include name="src/*/**" />
+		<include name="docs/*/**" />
+		<include name="templates/*/**" />
+		<include name="*License*" />
+		<include name="build.xml" />
+		<include name="ant.properties" />
+		<include name="TODO.txt" />
+	</patternset>
+
+	<target name="build-jastor-dist" depends="build-jastor" description="Builds the jastor distribution, should only be run from eclipse project">
+
+		<copy todir="${docs}" file="${basedir}/../com.ibm.adtech.jastor.test/ontologies/ski.owl" />
+		<copy todir="${docs}" file="${basedir}/../com.ibm.adtech.jastor.test/build.xml" />
+		<javadoc destdir="${docs}/javadoc" Verbose="false">
+			<fileset dir="${basedir}/src" />
+			<classpath>
+				<path refid="jastor.path" />
+				<pathelement path="${build}" />
+			</classpath>
+		</javadoc>
+		<zip destfile="${dist}/jastor-${jastor.version}.zip">
+			<fileset dir="${basedir}">
+				<patternset refid="distfiles" />
+			</fileset>
+			<fileset dir="${build}">
+				<include name="jastor*.jar" />
+			</fileset>
+		</zip>
+		<tar destfile="${dist}/jastor-${jastor.version}.tar">
+			<tarfileset dir="${basedir}">
+				<patternset refid="distfiles" />
+			</tarfileset>
+			<tarfileset dir="${build}">
+				<include name="jastor*.jar" />
+			</tarfileset>
+		</tar>
+		<gzip src="${dist}/jastor-${jastor.version}.tar" destfile="${dist}/jastor-${jastor.version}.tar.gz" />
+		<delete file="${dist}/jastor-${jastor.version}.tar" />
+	</target>
+
+	
+	<target name="build-foaf" >
+	
+		<mkdir dir="${examples}/foaf/gensrc/" />
+		<copy todir="${examples}/foaf/gensrc/">
+			<fileset dir="${basedir}/../com.ibm.adtech.jastor.test/gensrc/">
+				<include name="*/**/foaf/*/**/" />
+			</fileset>
+		</copy>
+		<copy todir="${examples}/foaf">
+			<fileset file="${basedir}/../com.ibm.adtech.jastor.test/ontologies/foaf.rdfs" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/License.html" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/License.txt" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/LicenseFAQ.pdf" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/LicenseFAQ.txt" />
+		</copy>
+		<mkdir dir="${examples}/foaf/javadoc" />
+		<javadoc sourcepath="${examples}/foaf/gensrc" packagenames="com.ibm.adtech.jastor.rdfs.test.foaf" destdir="${examples}/foaf/javadoc" Verbose="false">
+			<classpath>
+				<path refid="jastor.path" />
+				<pathelement path="${build}" />
+			</classpath>
+		</javadoc>
+		<jar basedir="${basedir}/../com.ibm.adtech.jastor.test/bin/" jarfile="${examples}/foaf/foaf-jastor.jar">
+			<include name="*/**/foaf/*/**" />
+		</jar>
+		<zip destfile="${examples}/foaf-${jastor.version}.zip">
+			<fileset dir="${examples}/foaf" />
+		</zip>
+		<tar destfile="${examples}/foaf-${jastor.version}.tar">
+			<tarfileset dir="${examples}/foaf" />
+		</tar>
+		<gzip src="${examples}/foaf-${jastor.version}.tar" destfile="${examples}/foaf-${jastor.version}.tar.gz" />
+		<delete file="${examples}/foaf-${jastor.version}.tar" />
+	</target>
+		
+	<target name="owls" >
+		<mkdir dir="${examples}/owls-1.1/gensrc/com/ibm/adtech/jastor/test/owls" />
+		<copy todir="${examples}/owls-1.1/gensrc/com/ibm/adtech/jastor/test/owls">
+			<fileset dir="${basedir}/../com.ibm.adtech.jastor.test/gensrc/com/ibm/adtech/jastor/test/owls" />
+		</copy>
+		<copy todir="${examples}/owls-1.1">
+			<fileset dir="${basedir}/../com.ibm.adtech.jastor.test/ontologies/owls-11" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/License.html" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/License.txt" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/LicenseFAQ.pdf" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/LicenseFAQ.txt" />
+		</copy>
+		<mkdir dir="${examples}/owls-1.1/javadoc" />
+		<javadoc sourcepath="${examples}/owls-1.1/gensrc" packagenames="com.ibm.adtech.jastor.test.owls.*" destdir="${examples}/owls-1.1/javadoc" Verbose="false">
+			<classpath>
+				<path refid="jastor.path" />
+				<pathelement path="${build}" />
+			</classpath>
+		</javadoc>
+		<jar basedir="${basedir}/../com.ibm.adtech.jastor.test/bin/" jarfile="${examples}/owls-1.1/owls-1.1-jastor.jar">
+			<include name="*/**/owls/*/**" />
+		</jar>
+		<zip destfile="${examples}/owls-1.1-${jastor.version}.zip">
+			<fileset dir="${examples}/owls-1.1" />
+		</zip>
+		<tar destfile="${examples}/owls-1.1-${jastor.version}.tar">
+			<tarfileset dir="${examples}/owls-1.1" />
+		</tar>
+		<gzip src="${examples}/owls-1.1-${jastor.version}.tar" destfile="${examples}/owls-1.1-${jastor.version}.tar.gz" />
+		<delete file="${examples}/owls-1.1-${jastor.version}.tar" />
+	</target>
+		
+	<target name="biopax" >
+		<mkdir dir="${examples}/biopax/gensrc/" />
+		<copy todir="${examples}/biopax/gensrc/">
+			<fileset dir="${basedir}/../com.ibm.adtech.jastor.biopax/gensrc/" />
+		</copy>
+		<copy todir="${examples}/biopax">
+			<fileset file="${basedir}/../com.ibm.adtech.jastor.biopax/biopax-level2.owl" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/License.html" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/License.txt" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/LicenseFAQ.pdf" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/LicenseFAQ.txt" />
+		</copy>
+		<mkdir dir="${examples}/biopax/javadoc" />
+		<javadoc sourcepath="${examples}/biopax/gensrc" packagenames="com.ibm.adtech.jastor.test.biopax.*" destdir="${examples}/biopax/javadoc" Verbose="false">
+			<classpath>
+				<path refid="jastor.path" />
+				<pathelement path="${build}" />
+			</classpath>
+		</javadoc>
+		<jar basedir="${basedir}/../com.ibm.adtech.jastor.biopax/bin/" jarfile="${examples}/biopax/biopax-jastor.jar">
+		</jar>
+		<zip destfile="${examples}/biopax-${jastor.version}.zip">
+			<fileset dir="${examples}/biopax" />
+		</zip>
+		<tar destfile="${examples}/biopax-${jastor.version}.tar">
+			<tarfileset dir="${examples}/biopax" />
+		</tar>
+		<gzip src="${examples}/biopax-${jastor.version}.tar" destfile="${examples}/biopax-${jastor.version}.tar.gz" />
+		<delete file="${examples}/biopax-${jastor.version}.tar" />
+	</target>
+		
+	<target name="collections">
+		<mkdir dir="${examples}/collections/gensrc/" />
+		<copy todir="${examples}/collections/gensrc/">
+			<fileset dir="${basedir}/../com.ibm.adtech.ontologies.util/gensrc/" />
+		</copy>
+		<mkdir dir="${examples}/collections/src/" />
+		<copy todir="${examples}/collections/src/">
+			<fileset dir="${basedir}/../com.ibm.adtech.ontologies.util/src/" />
+		</copy>
+		<mkdir dir="${examples}/collections/testsrc/" />
+		<copy todir="${examples}/collections/testsrc/">
+			<fileset dir="${basedir}/../com.ibm.adtech.ontologies.util/testsrc/" />
+		</copy>
+		<copy todir="${examples}/collections">
+			<fileset file="${basedir}/../com.ibm.adtech.ontologies/common/collections.owl" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/License.html" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/License.txt" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/LicenseFAQ.pdf" />
+			<fileset file="${basedir}/../com.ibm.adtech.jastor/LicenseFAQ.txt" />
+		</copy>
+		<copy todir="${examples}/collections">
+			<fileset file="${basedir}/../com.ibm.adtech.jastor.test/ontologies/ski.owl" />
+		</copy>
+		<mkdir dir="${examples}/collections/javadoc" />
+		<javadoc sourcepath="${examples}/collections/gensrc;${examples}/collections/src" packagenames="com.ibm.adtech.ontologies.*" destdir="${examples}/collections/javadoc" Verbose="false">
+			<classpath>
+				<path refid="jastor.path" />
+				<pathelement path="${build}" />
+			</classpath>
+		</javadoc>
+		<jar basedir="${basedir}/../com.ibm.adtech.ontologies.util/bin/" jarfile="${examples}/collections/collections-jastor.jar">
+		</jar>
+		<zip destfile="${examples}/collections-${jastor.version}.zip">
+			<fileset dir="${examples}/collections" />
+		</zip>
+		<tar destfile="${examples}/collections-${jastor.version}.tar">
+			<tarfileset dir="${examples}/collections" />
+		</tar>
+		<gzip src="${examples}/collections-${jastor.version}.tar" destfile="${examples}/collections-${jastor.version}.tar.gz" />
+		<delete file="${examples}/collections-${jastor.version}.tar" />
+	</target>
+
+</project>
