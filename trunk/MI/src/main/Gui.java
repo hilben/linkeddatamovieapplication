@@ -104,6 +104,7 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 		
 		linkedMDBEntryPoint = new LinkedMDBEntryPoint();
 		
+		
 		try {
 			this.setSize(833, 417);
 			this.setBackground(SWTResourceManager.getColor(192, 192, 192));
@@ -284,6 +285,7 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 		if(arg0.getSource().equals(SearchButton)){
 			String temp = this.TextSearch.getText();
 			linkedMDBEntryPoint.saveSearchResults(temp);
+			linkedMDBEntryPoint.printRDF("Queen");
 			ArrayList<Film> tl = linkedMDBEntryPoint.getSearchResultNames();	
 			Collections.sort(tl);
 			this.ListResults.removeAll();
