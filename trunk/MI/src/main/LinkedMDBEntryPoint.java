@@ -6,7 +6,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
-public class LDR {
+public class LinkedMDBEntryPoint {
 	
 	private	String search = "";
 	private Model model;
@@ -14,14 +14,14 @@ public class LDR {
 	private Statement st;
 	private String filmURI ="";
 	private ArrayList<Film> ResultsName;
+	private ArrayList<String> Actors;
 	
-	public LDR(){
+	public LinkedMDBEntryPoint(){
 		model = ModelFactory.createDefaultModel();
 		model.read("http://data.linkedmdb.org/all/film",null);
 		si = model.listStatements();
 		ResultsName = new ArrayList<Film>();
-		
-		
+		model.write(System.out);
 	}
 	
 	public String getFilmName(int position){
