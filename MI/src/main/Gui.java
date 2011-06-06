@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
@@ -17,11 +16,9 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Menu;
@@ -32,14 +29,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.awt.Desktop;
 
-import chrriis.common.UIUtils;
 import chrriis.dj.nativeswing.swtimpl.NativeInterface;
 
 import com.cloudgarden.resource.SWTResourceManager;
-
-import java.awt.BorderLayout;
 import java.awt.Frame;
-import java.awt.LayoutManager;
 import java.awt.Panel;
 
 /**
@@ -90,7 +83,7 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 			
 	
 	
-	public  LDR ldr;
+	public  LinkedMDBEntryPoint linkedMDBEntryPoint;
 
 	{
 		//Register as a resource user - SWTResourceManager will
@@ -109,7 +102,7 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 	*/
 	private void initGUI() {
 		
-		ldr = new LDR();
+		linkedMDBEntryPoint = new LinkedMDBEntryPoint();
 		
 		try {
 			this.setSize(833, 417);
@@ -236,8 +229,8 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 			this.layout();
 			
 			String temp = this.TextSearch.getText();
-			ldr.saveSearchResults(temp);
-			ArrayList<Film> tl = ldr.getSearchResultNames();	
+			linkedMDBEntryPoint.saveSearchResults(temp);
+			ArrayList<Film> tl = linkedMDBEntryPoint.getSearchResultNames();	
 			Collections.sort(tl);
 			this.ListResults.removeAll();
 			this.ListResults.redraw();
@@ -257,7 +250,7 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 	* org.eclipse.swt.widgets.Composite inside a new Shell.
 	*/
 	public static void main(String[] args) {
-	
+		
 		Display display = Display.getDefault();
 		Shell shell = new Shell(display);
 		Gui inst = new Gui(shell, SWT.NULL);
@@ -290,8 +283,8 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 		// TODO Auto-generated method stub
 		if(arg0.getSource().equals(SearchButton)){
 			String temp = this.TextSearch.getText();
-			ldr.saveSearchResults(temp);
-			ArrayList<Film> tl = ldr.getSearchResultNames();	
+			linkedMDBEntryPoint.saveSearchResults(temp);
+			ArrayList<Film> tl = linkedMDBEntryPoint.getSearchResultNames();	
 			Collections.sort(tl);
 			this.ListResults.removeAll();
 			this.ListResults.redraw();
@@ -302,7 +295,7 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 			try {
 				SearchHelper sh = new SearchHelper();
 				Youtube tube = new Youtube();
-				this.openTrailer(tube.searchTrailer(sh.formatSearchString(ldr.getFilmName(this.ListResults.getSelectionIndex())) + " trailer"));
+				this.openTrailer(tube.searchTrailer(sh.formatSearchString(linkedMDBEntryPoint.getFilmName(this.ListResults.getSelectionIndex())) + " trailer"));
 			} catch (URISyntaxException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -324,8 +317,8 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 		// TODO Auto-generated method stub
 		if(arg0.getSource().equals(this.TextSearch) && (arg0.keyCode == 13)){
 			String temp = this.TextSearch.getText();
-			ldr.saveSearchResults(temp);
-			ArrayList<Film> tl = ldr.getSearchResultNames();		
+			linkedMDBEntryPoint.saveSearchResults(temp);
+			ArrayList<Film> tl = linkedMDBEntryPoint.getSearchResultNames();		
 			Collections.sort(tl);
 			this.ListResults.removeAll();
 			this.ListResults.redraw();
