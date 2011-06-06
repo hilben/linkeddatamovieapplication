@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
@@ -32,6 +33,9 @@ import java.awt.Desktop;
 import chrriis.dj.nativeswing.swtimpl.NativeInterface;
 
 import com.cloudgarden.resource.SWTResourceManager;
+import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.query.ResultSetFormatter;
+
 import java.awt.Frame;
 import java.awt.Panel;
 
@@ -50,6 +54,7 @@ import java.awt.Panel;
 public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListener, KeyListener {
 
 	private Menu menu1;
+	private StyledText ActorResultsText;
 	private Button SearchButton;
 	private Panel panel1;
 	private Frame frame1;
@@ -111,7 +116,16 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 			FormLayout thisLayout = new FormLayout();
 			this.setLayout(thisLayout);
 			this.setBackgroundMode(1);
-			
+			{
+				ActorResultsText = new StyledText(this, SWT.NONE);
+				FormData ActorResultsTextLData = new FormData();
+				ActorResultsTextLData.left =  new FormAttachment(0, 1000, 483);
+				ActorResultsTextLData.top =  new FormAttachment(0, 1000, 101);
+				ActorResultsTextLData.width = 268;
+				ActorResultsTextLData.height = 229;
+				ActorResultsText.setLayoutData(ActorResultsTextLData);
+				ActorResultsText.setText("styledText1");
+			}
 
 			{
 				trailerButton = new Button(this, SWT.PUSH | SWT.CENTER);
@@ -305,6 +319,10 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}else if(arg0.getSource().equals(this.ListResults)){
+			LinkedMDBFilmData lf = new LinkedMDBFilmData();
+			ResultSet temp = lf.getMovieActors2(this.linkedMDBEntryPoint.getSearchResultNames().get(ListResults.getSelectionIndex()).getURI());
+			this.ActorResultsText.setText(ResultSetFormatter.asText(temp));
 		}
 	}
 

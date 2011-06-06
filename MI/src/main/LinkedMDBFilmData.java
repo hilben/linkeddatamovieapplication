@@ -129,7 +129,7 @@ public class LinkedMDBFilmData{
 	}
 	
 	
-	public LinkedMDBFilmData(String FilmURI){
+	public LinkedMDBFilmData(){
 	
 		this.ActorMovies = new ArrayList<String>();
 		this.MovieActors = new ArrayList<String>();
@@ -139,7 +139,7 @@ public class LinkedMDBFilmData{
 	
 	
 	public static void main(String[] args){
-		LinkedMDBFilmData d = new LinkedMDBFilmData("");
+		LinkedMDBFilmData d = new LinkedMDBFilmData();
 		d.getMovieActors2("http://data.linkedmdb.org/resource/film/675");
 		ResultSetFormatter.out(d.Results);
 	
