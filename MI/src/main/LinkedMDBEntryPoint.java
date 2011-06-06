@@ -21,7 +21,7 @@ public class LinkedMDBEntryPoint {
 		model.read("http://data.linkedmdb.org/all/film",null);
 		si = model.listStatements();
 		ResultsName = new ArrayList<Film>();
-		model.write(System.out);
+		
 	}
 	
 	public String getFilmName(int position){
@@ -47,7 +47,8 @@ public class LinkedMDBEntryPoint {
 		while(si.hasNext()){
 			st = si.nextStatement();
 			if(st.toString().contains(s)){
-				System.out.println(this.getFilmName(st));
+				System.out.println(st);
+				//System.out.println(this.getFilmName(st));
 			}
 			
 		}
