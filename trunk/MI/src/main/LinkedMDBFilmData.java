@@ -29,6 +29,55 @@ public class LinkedMDBFilmData{
 	private ResultSet Results;
 	
 	
+	public ArrayList<String> getMovieActorsList(ResultSet s){
+		String temp;
+		String temp2;
+		MovieActors = new ArrayList<String>();
+		while(s.hasNext()){
+			temp =  s.next().toString();
+			temp2 = temp.substring(temp.indexOf("\"")+1,temp.lastIndexOf("\""));
+			MovieActors.add(temp2);
+		}
+		return MovieActors;
+	}
+	
+	
+	public ResultSet getMovieAbstract(String Film){
+		query =	"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> "+
+			"	PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "+
+		"		PREFIX dbpedia2: <http://dbpedia.org/property/> "+
+		"		PREFIX dbpedia: <http://dbpedia.org/> "+
+		
+		" SELECT ?x "+
+	" 	  WHERE  "+
+	"	    {  "+
+	"		?sub2 rdf:type <http://dbpedia.org/ontology/Film> . " +
+	"	    OPTIONAL{ ?sub2 rdfs:comment ?x    . } "+
+	"       ?sub2 rdfs:label \""+Film+"\"@en " +
+	"		FILTER(lang(?x) = \"en\")" +
+	"	    }  "+
+	"	  ORDER BY DESC(?date)  " ;
+	
+		  
+		Query q = QueryFactory.create(query);
+		QueryExecution qe = QueryExecutionFactory.sparqlService("http://dbpedia.org/sparql", query);
+		ResultSet rs = qe.execSelect();
+		Results = rs;
+		return rs;
+	}
+	
+	public String getFilmDescription(String Film){
+		ResultSet s = this.getMovieAbstract(Film);
+		String temp;
+		if(s.hasNext()){
+			temp = s.next().getLiteral("?x").getString();
+		}else{
+			temp = "No Description Found";
+		}
+		
+		return temp;
+	}
+	
 	public ResultSet getMovieActors(String MovieURI){
 		model = ModelFactory.createMemModelMaker().createDefaultModel();
 		model.read("http://data.linkedmdb.org/all/film",null);
@@ -37,20 +86,13 @@ public class LinkedMDBFilmData{
 		 		"PREFIX dbpedia: <http://dbpedia.org/ontology/> " +
 		         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " + 
 		         "PREFIX foaf: <http://xmlns.com/foaf/0.1/>"+
-				"SELECT ?name ?birth_date"+
-			    "   from <http://xmlns.com/foaf/0.1/> " +
+				"SELECT ?name "+
 				"WHERE{"+
 				"SERVICE <http://data.linkedmdb.org/sparql> { "+
 				 "          <"+MovieURI+"> dcterms:title ?movie . " + 
 				 "          <"+MovieURI+"> imdb:actor ?actor . " + 
 				 "          ?actor imdb:actor_name ?name . " + 
 				"}" + 
-			/*    "       SERVICE <http://dbpedia.org/sparql> " +
-		        "       { " + 
-		        "			OPTIONAL{  ?per   rdfs:label  ?name } "+
-		        "           OPTIONAL{   ?per   dbpedia:birthDate ?birth_date } " +
-		    //    "			FILTER regex(?per, ?actor, \"i\") " + 
-		        "        } " +*/
 				"}";
 		
 		Query q = QueryFactory.create(query);
@@ -59,14 +101,12 @@ public class LinkedMDBFilmData{
 		ResultSet rs = qe.execSelect();
 		Results = rs;
 	
-		
 		return rs;
 	}
 	
 	
 	public ResultSet getMovieActors2(String MovieURI){
-		model = ModelFactory.createMemModelMaker().createDefaultModel();
-		model.read("http://data.linkedmdb.org/all/film",null);
+		
 		query =  "PREFIX movie: <http://data.linkedmdb.org/resource/movie/>"+
 				 "PREFIX dbpedia: <http://dbpedia.org/ontology/>"+
 				 "PREFIX foaf: <http://xmlns.com/foaf/0.1/>"+
@@ -131,8 +171,8 @@ public class LinkedMDBFilmData{
 	
 	public LinkedMDBFilmData(){
 	
-		this.ActorMovies = new ArrayList<String>();
-		this.MovieActors = new ArrayList<String>();
+		model = ModelFactory.createMemModelMaker().createDefaultModel();
+		model.read("http://xmlns.com/foaf/0.1/",null);
 		
 	}
 	
@@ -140,8 +180,8 @@ public class LinkedMDBFilmData{
 	
 	public static void main(String[] args){
 		LinkedMDBFilmData d = new LinkedMDBFilmData();
-		d.getMovieActors2("http://data.linkedmdb.org/resource/film/675");
-		ResultSetFormatter.out(d.Results);
+		
+		System.out.println(d.getFilmDescription("Braveheart"));
 	
 	}
 	
