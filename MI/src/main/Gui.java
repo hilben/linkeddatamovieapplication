@@ -3,6 +3,8 @@ package main;
 
 
 import java.io.IOException;
+import java.text.AttributedCharacterIterator;
+import java.text.AttributedString;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.eclipse.swt.SWT;
@@ -22,22 +24,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.awt.Desktop;
-
-import chrriis.dj.nativeswing.swtimpl.NativeInterface;
-
 import com.cloudgarden.resource.SWTResourceManager;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.ResultSetFormatter;
-
 import java.awt.Frame;
 import java.awt.Panel;
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineBreakMeasurer;
 
 /**
 * This code was edited or generated using CloudGarden's Jigloo
@@ -53,30 +51,17 @@ import java.awt.Panel;
 */
 public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListener, KeyListener {
 
-	private Menu menu1;
-	private StyledText ActorResultsText;
+	private Button ActorsButton;
 	private Button SearchButton;
-	private Panel panel1;
-	private Frame frame1;
-	private Composite composite1;
-	private PlayerPanel player;
+	private Button DescriptionButton;
+	private List Actors;
+	private StyledText DescriptionField;
 	private Button trailerButton;
 	private List ListResults;
 	private Text TextSearch;
 	private Label SearchLabel;
-	private MenuItem aboutMenuItem;
-	private MenuItem contentsMenuItem;
-	private Menu helpMenu;
-	private MenuItem helpMenuItem;
 	private Label ProgName;
-	private MenuItem exitMenuItem;
-	private MenuItem closeFileMenuItem;
-	private MenuItem saveFileMenuItem;
-	private MenuItem newFileMenuItem;
-	private MenuItem openFileMenuItem;
-	private Menu fileMenu;
-	private MenuItem fileMenuItem;
-	
+
 	public void openTrailer(String url) throws URISyntaxException, IOException{
 		
 			URI uri = new java.net.URI( url);
@@ -111,31 +96,72 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 		
 		
 		try {
-			this.setSize(833, 417);
+			this.setSize(850, 417);
 			this.setBackground(SWTResourceManager.getColor(192, 192, 192));
 			FormLayout thisLayout = new FormLayout();
 			this.setLayout(thisLayout);
 			this.setBackgroundMode(1);
 			{
-				ActorResultsText = new StyledText(this, SWT.NONE);
-				FormData ActorResultsTextLData = new FormData();
-				ActorResultsTextLData.left =  new FormAttachment(0, 1000, 483);
-				ActorResultsTextLData.top =  new FormAttachment(0, 1000, 101);
-				ActorResultsTextLData.width = 268;
-				ActorResultsTextLData.height = 229;
-				ActorResultsText.setLayoutData(ActorResultsTextLData);
-				ActorResultsText.setText("styledText1");
+				DescriptionButton = new Button(this, SWT.PUSH | SWT.CENTER);
+				FormData DescriptionButtonLData = new FormData();
+				DescriptionButtonLData.left =  new FormAttachment(0, 1000, 406);
+				DescriptionButtonLData.top =  new FormAttachment(0, 1000, 278);
+				DescriptionButtonLData.width = 95;
+				DescriptionButtonLData.height = 25;
+				DescriptionButton.setLayoutData(DescriptionButtonLData);
+				DescriptionButton.setText("Get Description");
+				DescriptionButton.setBackground(SWTResourceManager.getColor(192, 192, 192));
+				DescriptionButton.addMouseListener(this);
 			}
+			{
+				FormData DescriptionFieldLData = new FormData();
+				DescriptionFieldLData.left =  new FormAttachment(0, 1000, 507);
+				DescriptionFieldLData.top =  new FormAttachment(0, 1000, 278);
+				DescriptionFieldLData.width = 330;
+				DescriptionFieldLData.height = 122;
+				DescriptionField = new StyledText(this, SWT.NONE);
+				DescriptionField.setLayoutData(DescriptionFieldLData);
+				DescriptionField.setEditable(false);
+				DescriptionField.setOrientation(SWT.VERTICAL);
+				DescriptionField.setBackground(SWTResourceManager.getColor(238, 238, 238));
+				DescriptionField.setJustify(true);
+				DescriptionField.setWordWrap(true);
+
+			}
+			{
+				FormData ActorsLData = new FormData();
+				ActorsLData.left =  new FormAttachment(0, 1000, 507);
+				ActorsLData.top =  new FormAttachment(0, 1000, 64);
+				ActorsLData.width = 311;
+				ActorsLData.height = 202;
+				Actors = new List(this, SWT.V_SCROLL);
+				Actors.setLayoutData(ActorsLData);
+				Actors.setDragDetect(false);
+			}
+			{
+				ActorsButton = new Button(this, SWT.PUSH | SWT.CENTER);
+				FormData ActorsButtonLData = new FormData();
+				ActorsButtonLData.left =  new FormAttachment(0, 1000, 406);
+				ActorsButtonLData.top =  new FormAttachment(0, 1000, 64);
+				ActorsButtonLData.width = 95;
+				ActorsButtonLData.height = 25;
+				ActorsButton.setLayoutData(ActorsButtonLData);
+				ActorsButton.setText("Show Actors");
+				ActorsButton.setBackground(SWTResourceManager.getColor(192, 192, 192));
+				ActorsButton.addMouseListener(this);
+			}
+
 
 			{
 				trailerButton = new Button(this, SWT.PUSH | SWT.CENTER);
 				FormData trailerButtonLData = new FormData();
 				trailerButtonLData.left =  new FormAttachment(0, 1000, 406);
-				trailerButtonLData.top =  new FormAttachment(0, 1000, 64);
-				trailerButtonLData.width = 82;
+				trailerButtonLData.top =  new FormAttachment(0, 1000, 176);
+				trailerButtonLData.width = 95;
 				trailerButtonLData.height = 25;
 				trailerButton.setLayoutData(trailerButtonLData);
 				trailerButton.setText("Watch Trailer");
+				trailerButton.setBackground(SWTResourceManager.getColor(192, 192, 192));
 				trailerButton.addMouseListener(this);
 			}
 			{
@@ -147,6 +173,7 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 				SerachButtonLData.height = 25;
 				SearchButton.setLayoutData(SerachButtonLData);
 				SearchButton.setText("Go!");
+				SearchButton.setBackground(SWTResourceManager.getColor(192, 192, 192));
 				SearchButton.addMouseListener(this);
 			}
 			{
@@ -158,7 +185,6 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 				ListResults = new List(this, SWT.V_SCROLL);
 				ListResults.setLayoutData(ListResultsLData);
 				ListResults.setSelection(new java.lang.String[] {""});
-				ListResults.setToolTipText("Double-Click on Item to see Details");
 				ListResults.addMouseListener(this);
 			}
 			{
@@ -189,58 +215,10 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 				ProgNameLData.width = 127;
 				ProgNameLData.height = 15;
 				ProgName.setLayoutData(ProgNameLData);
-				ProgName.setText("Movie Database Crawler");
+				ProgName.setText("Movie Database ");
 			}
 			
 
-			{
-				menu1 = new Menu(getShell(), SWT.BAR);
-				getShell().setMenuBar(menu1);
-				{
-					fileMenuItem = new MenuItem(menu1, SWT.CASCADE);
-					fileMenuItem.setText("File");
-					{
-						fileMenu = new Menu(fileMenuItem);
-						{
-							openFileMenuItem = new MenuItem(fileMenu, SWT.CASCADE);
-							openFileMenuItem.setText("Open");
-						}
-						{
-							newFileMenuItem = new MenuItem(fileMenu, SWT.CASCADE);
-							newFileMenuItem.setText("New");
-						}
-						{
-							saveFileMenuItem = new MenuItem(fileMenu, SWT.CASCADE);
-							saveFileMenuItem.setText("Save");
-						}
-						{
-							closeFileMenuItem = new MenuItem(fileMenu, SWT.CASCADE);
-							closeFileMenuItem.setText("Close");
-						}
-						{
-							exitMenuItem = new MenuItem(fileMenu, SWT.CASCADE);
-							exitMenuItem.setText("Exit");
-						}
-						fileMenuItem.setMenu(fileMenu);
-					}
-				}
-				{
-					helpMenuItem = new MenuItem(menu1, SWT.CASCADE);
-					helpMenuItem.setText("Help");
-					{
-						helpMenu = new Menu(helpMenuItem);
-						{
-							contentsMenuItem = new MenuItem(helpMenu, SWT.CASCADE);
-							contentsMenuItem.setText("Contents");
-						}
-						{
-							aboutMenuItem = new MenuItem(helpMenu, SWT.CASCADE);
-							aboutMenuItem.setText("About");
-						}
-						helpMenuItem.setMenu(helpMenu);
-					}
-				}
-			}
 			this.layout();
 			
 			String temp = this.TextSearch.getText();
@@ -319,10 +297,22 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}else if(arg0.getSource().equals(this.ListResults)){
+		}else if(arg0.getSource().equals(this.ActorsButton)){
 			LinkedMDBFilmData lf = new LinkedMDBFilmData();
-			ResultSet temp = lf.getMovieActors2(this.linkedMDBEntryPoint.getSearchResultNames().get(ListResults.getSelectionIndex()).getURI());
-			this.ActorResultsText.setText(ResultSetFormatter.asText(temp));
+			ResultSet temp = lf.getMovieActors(this.linkedMDBEntryPoint.getSearchResultNames().get(ListResults.getSelectionIndex()).getURI());
+			//this.ActorResultsText.setText(ResultSetFormatter.asText((temp)));
+			ArrayList<String> alist = new ArrayList<String>();
+			alist = lf.getMovieActorsList(temp);
+			this.Actors.removeAll();
+			for(int i = 0; i < alist.size(); i++){
+				this.Actors.add(alist.get(i));
+			}
+			
+		}else if(arg0.getSource().equals(this.DescriptionButton)){
+			LinkedMDBFilmData lf = new LinkedMDBFilmData();
+			String t = lf.getFilmDescription(this.ListResults.getItem(this.ListResults.getSelectionIndex()));
+			this.DescriptionField.setText(t);
+			
 		}
 	}
 
