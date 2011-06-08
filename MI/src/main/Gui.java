@@ -96,7 +96,7 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 		
 		
 		try {
-			this.setSize(850, 417);
+			this.setSize(867, 417);
 			this.setBackground(SWTResourceManager.getColor(192, 192, 192));
 			FormLayout thisLayout = new FormLayout();
 			this.setLayout(thisLayout);
@@ -112,6 +112,7 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 				DescriptionButton.setText("Get Description");
 				DescriptionButton.setBackground(SWTResourceManager.getColor(192, 192, 192));
 				DescriptionButton.addMouseListener(this);
+			
 			}
 			{
 				FormData DescriptionFieldLData = new FormData();
@@ -119,20 +120,22 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 				DescriptionFieldLData.top =  new FormAttachment(0, 1000, 278);
 				DescriptionFieldLData.width = 330;
 				DescriptionFieldLData.height = 122;
-				DescriptionField = new StyledText(this, SWT.NONE);
+				DescriptionField = new StyledText(this, SWT.V_SCROLL);
 				DescriptionField.setLayoutData(DescriptionFieldLData);
 				DescriptionField.setEditable(false);
 				DescriptionField.setOrientation(SWT.VERTICAL);
 				DescriptionField.setBackground(SWTResourceManager.getColor(238, 238, 238));
-				DescriptionField.setJustify(true);
+				DescriptionField.setJustify(false);
 				DescriptionField.setWordWrap(true);
+				DescriptionField.setLineSpacing(2);
+				
 
 			}
 			{
 				FormData ActorsLData = new FormData();
 				ActorsLData.left =  new FormAttachment(0, 1000, 507);
 				ActorsLData.top =  new FormAttachment(0, 1000, 64);
-				ActorsLData.width = 311;
+				ActorsLData.width = 328;
 				ActorsLData.height = 202;
 				Actors = new List(this, SWT.V_SCROLL);
 				Actors.setLayoutData(ActorsLData);
