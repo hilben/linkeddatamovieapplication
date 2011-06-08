@@ -3,8 +3,6 @@ package main;
 
 
 import java.io.IOException;
-import java.text.AttributedCharacterIterator;
-import java.text.AttributedString;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.eclipse.swt.SWT;
@@ -31,11 +29,6 @@ import java.net.URISyntaxException;
 import java.awt.Desktop;
 import com.cloudgarden.resource.SWTResourceManager;
 import com.hp.hpl.jena.query.ResultSet;
-import com.hp.hpl.jena.query.ResultSetFormatter;
-import java.awt.Frame;
-import java.awt.Panel;
-import java.awt.font.FontRenderContext;
-import java.awt.font.LineBreakMeasurer;
 
 /**
 * This code was edited or generated using CloudGarden's Jigloo
@@ -303,7 +296,6 @@ public class Gui extends org.eclipse.swt.widgets.Composite implements MouseListe
 		}else if(arg0.getSource().equals(this.ActorsButton)){
 			LinkedMDBFilmData lf = new LinkedMDBFilmData();
 			ResultSet temp = lf.getMovieActors(this.linkedMDBEntryPoint.getSearchResultNames().get(ListResults.getSelectionIndex()).getURI());
-			//this.ActorResultsText.setText(ResultSetFormatter.asText((temp)));
 			ArrayList<String> alist = new ArrayList<String>();
 			alist = lf.getMovieActorsList(temp);
 			this.Actors.removeAll();
