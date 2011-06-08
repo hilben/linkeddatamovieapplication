@@ -40,6 +40,7 @@ public class LinkedMDBEntryPoint {
 			}
 			st = si.nextStatement();
 		}
+		
 	}
 	
 	public void printRDF(String s){

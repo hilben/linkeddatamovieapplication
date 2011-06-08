@@ -17,7 +17,6 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 public class LinkedMDBFilmData{
 
-	private ArrayList<String> ActorMovies;
 	private ArrayList<String> MovieActors;
 	private Model model;
 	private StmtIterator si;
